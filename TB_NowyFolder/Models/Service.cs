@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TB_NowyFolder.Models;
 
@@ -25,5 +26,6 @@ public class Service
     public string Availability { get; set; } = "Available";
 
     // Navigation property
-    public ICollection<ReservationService> ReservationServices { get; set; } = new List<ReservationService>();
+    [JsonIgnore]
+    public virtual ICollection<ReservationService>? ReservationServices { get; set; }
 }

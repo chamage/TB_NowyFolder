@@ -6,9 +6,11 @@ namespace TB_NowyFolder.Models;
 [Table("ReservationRooms")]
 public class ReservationRoom
 {
+    [Key, Column(Order = 0)]
     [Required]
     public int ReservationID { get; set; }
 
+    [Key, Column(Order = 1)]
     [Required]
     public int RoomID { get; set; }
 
@@ -18,8 +20,8 @@ public class ReservationRoom
 
     // Navigation properties
     [ForeignKey(nameof(ReservationID))]
-    public Reservation Reservation { get; set; } = null!;
+    public virtual Reservation? Reservation { get; set; }
 
     [ForeignKey(nameof(RoomID))]
-    public Room Room { get; set; } = null!;
+    public virtual Room? Room { get; set; }
 }

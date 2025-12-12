@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TB_NowyFolder.Models;
 
@@ -34,9 +35,11 @@ public class Reservation
 
     // Navigation properties
     [ForeignKey(nameof(GuestID))]
-    public Guest Guest { get; set; } = null!;
+    public virtual Guest? Guest { get; set; }
 
-    public ICollection<ReservationRoom> ReservationRooms { get; set; } = new List<ReservationRoom>();
+    [JsonIgnore]
+    public virtual ICollection<ReservationRoom>? ReservationRooms { get; set; }
 
-    public ICollection<ReservationService> ReservationServices { get; set; } = new List<ReservationService>();
+    [JsonIgnore]
+    public virtual ICollection<ReservationService>? ReservationServices { get; set; }
 }

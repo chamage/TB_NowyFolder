@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TB_NowyFolder.Models;
 
@@ -29,7 +30,8 @@ public class Room
 
     // Navigation properties
     [ForeignKey(nameof(RoomTypeID))]
-    public RoomType RoomType { get; set; } = null!;
+    public virtual RoomType? RoomType { get; set; }
 
-    public ICollection<ReservationRoom> ReservationRooms { get; set; } = new List<ReservationRoom>();
+    [JsonIgnore]
+    public virtual ICollection<ReservationRoom>? ReservationRooms { get; set; }
 }

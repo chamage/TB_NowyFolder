@@ -1,7 +1,15 @@
+using Microsoft.EntityFrameworkCore;
+using TB_NowyFolder.Data;
+using TB_NowyFolder.Endpoints;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+// Add Database Context
+builder.Services.AddDbContext<HotelDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add API Explorer and Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -45,5 +53,12 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
+
+// Map API Endpoints
+app.MapGuestEndpoints();
+app.MapRoomTypeEndpoints();
+app.MapRoomEndpoints();
+app.MapServiceEndpoints();
+app.MapReservationEndpoints();
 
 app.Run();
