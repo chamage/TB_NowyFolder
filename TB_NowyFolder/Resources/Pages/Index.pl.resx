@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Hotel Reservation System" xml:space="preserve">
+    <value>System Rezerwacji Hotelowych</value>
+  </data>
+  <data name="Manage your guests, rooms, and reservations easily." xml:space="preserve">
+    <value>Zarządzaj gośćmi, pokojami i rezerwacjami w prosty sposób.</value>
+  </data>
+  <data name="Guests" xml:space="preserve">
+    <value>Goście</value>
+  </data>
+  <data name="Rooms" xml:space="preserve">
+    <value>Pokoje</value>
+  </data>
+  <data name="Services" xml:space="preserve">
+    <value>Usługi</value>
+  </data>
+  <data name="Reservations" xml:space="preserve">
+    <value>Rezerwacje</value>
+  </data>
+  <data name="Guest Management" xml:space="preserve">
+    <value>Zarządzanie Gośćmi</value>
+  </data>
+  <data name="Add Guest" xml:space="preserve">
+    <value>Dodaj Gościa</value>
+  </data>
+  <data name="Loading guests..." xml:space="preserve">
+    <value>Ładowanie gości...</value>
+  </data>
+  <data name="Room Management" xml:space="preserve">
+    <value>Zarządzanie Pokojami</value>
+  </data>
+  <data name="Add Room" xml:space="preserve">
+    <value>Dodaj Pokój</value>
+  </data>
+  <data name="Show Available Only" xml:space="preserve">
+    <value>Pokaż Tylko Dostępne</value>
+  </data>
+  <data name="Show All" xml:space="preserve">
+    <value>Pokaż Wszystkie</value>
+  </data>
+  <data name="Loading rooms..." xml:space="preserve">
+    <value>Ładowanie pokoi...</value>
+  </data>
+  <data name="Service Management" xml:space="preserve">
+    <value>Zarządzanie Usługami</value>
+  </data>
+  <data name="Add Service" xml:space="preserve">
+    <value>Dodaj Usługę</value>
+  </data>
+  <data name="Loading services..." xml:space="preserve">
+    <value>Ładowanie usług...</value>
+  </data>
+  <data name="Reservation Management" xml:space="preserve">
+    <value>Zarządzanie Rezerwacjami</value>
+  </data>
+  <data name="New Reservation" xml:space="preserve">
+    <value>Nowa Rezerwacja</value>
+  </data>
+  <data name="Loading reservations..." xml:space="preserve">
+    <value>Ładowanie rezerwacji...</value>
+  </data>
+  <data name="ID" xml:space="preserve">
+    <value>ID</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Nazwisko</value>
+  </data>
+  <data name="Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Phone" xml:space="preserve">
+    <value>Telefon</value>
+  </data>
+  <data name="Actions" xml:space="preserve">
+    <value>Akcje</value>
+  </data>
+  <data name="No guests found" xml:space="preserve">
+    <value>Nie znaleziono gości</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Usuń</value>
+  </data>
+  <data name="Room #" xml:space="preserve">
+    <value>Pokój Nr</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Typ</value>
+  </data>
+  <data name="Capacity" xml:space="preserve">
+    <value>Pojemność</value>
+  </data>
+  <data name="Price" xml:space="preserve">
+    <value>Cena</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="No rooms found" xml:space="preserve">
+    <value>Nie znaleziono pokoi</value>
+  </data>
+  <data name="pers." xml:space="preserve">
+    <value>os.</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>Usługa</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Opis</value>
+  </data>
+  <data name="Availability" xml:space="preserve">
+    <value>Dostępność</value>
+  </data>
+  <data name="No services found" xml:space="preserve">
+    <value>Nie znaleziono usług</value>
+  </data>
+  <data name="Guest" xml:space="preserve">
+    <value>Gość</value>
+  </data>
+  <data name="Dates" xml:space="preserve">
+    <value>Daty</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Razem</value>
+  </data>
+  <data name="No reservations found" xml:space="preserve">
+    <value>Nie znaleziono rezerwacji</value>
+  </data>
+  <data name="rooms" xml:space="preserve">
+    <value>pokoje</value>
+  </data>
+  <data name="Are you sure you want to delete this guest?" xml:space="preserve">
+    <value>Czy na pewno chcesz usunąć tego gościa?</value>
+  </data>
+  <data name="Guest created successfully!" xml:space="preserve">
+    <value>Gość został utworzony!</value>
+  </data>
+  <data name="Error creating guest: " xml:space="preserve">
+    <value>Błąd podczas tworzenia gościa: </value>
+  </data>
+  <data name="Reservation #" xml:space="preserve">
+    <value>Rezerwacja #</value>
+  </data>
+  <data name=" created!" xml:space="preserve">
+    <value> utworzona!</value>
+  </data>
+  <data name="Error creating reservation: " xml:space="preserve">
+    <value>Błąd podczas tworzenia rezerwacji: </value>
+  </data>
+  <data name="Room added successfully!" xml:space="preserve">
+    <value>Pokój został dodany!</value>
+  </data>
+  <data name="Service added successfully!" xml:space="preserve">
+    <value>Usługa została dodana!</value>
+  </data>
+  <data name="Home" xml:space="preserve">
+    <value>Strona Główna</value>
+  </data>
+  <data name="Privacy" xml:space="preserve">
+    <value>Prywatność</value>
+  </data>
+  <data name="Guest Information" xml:space="preserve">
+    <value>Informacje o Gościu</value>
+  </data>
+  <data name="Reservation Info" xml:space="preserve">
+    <value>Szczegóły Rezerwacji</value>
+  </data>
+  <data name="Total Price" xml:space="preserve">
+    <value>Cena Całkowita</value>
+  </data>
+  <data name="Price/Night" xml:space="preserve">
+    <value>Cena/Noc</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="Quantity" xml:space="preserve">
+    <value>Ilość</value>
+  </data>
+  <data name="Unit Price" xml:space="preserve">
+    <value>Cena Jednostkowa</value>
+  </data>
+  <data name="No rooms assigned" xml:space="preserve">
+    <value>Brak przypisanych pokoi</value>
+  </data>
+  <data name="No extra services" xml:space="preserve">
+    <value>Brak dodatkowych usług</value>
+  </data>
+  <data name="Standard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Price per Night" xml:space="preserve">
+    <value>Cena za Noc</value>
+  </data>
+  <data name="Add New Guest" xml:space="preserve">
+    <value>Dodaj Nowego Gościa</value>
+  </data>
+  <data name="First Name" xml:space="preserve">
+    <value>Imię</value>
+  </data>
+  <data name="Last Name" xml:space="preserve">
+    <value>Nazwisko</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Zamknij</value>
+  </data>
+  <data name="Save Guest" xml:space="preserve">
+    <value>Zapisz Gościa</value>
+  </data>
+  <data name="Create Reservation" xml:space="preserve">
+    <value>Utwórz Rezerwację</value>
+  </data>
+  <data name="Select Guest..." xml:space="preserve">
+    <value>Wybierz Gościa...</value>
+  </data>
+  <data name="Check In" xml:space="preserve">
+    <value>Zameldowanie</value>
+  </data>
+  <data name="Check Out" xml:space="preserve">
+    <value>Wymeldowanie</value>
+  </data>
+  <data name="Number of Guests" xml:space="preserve">
+    <value>Liczba Gości</value>
+  </data>
+  <data name="Add Room to Reservation" xml:space="preserve">
+    <value>Dodaj Pokój do Rezerwacji</value>
+  </data>
+  <data name="Select Room" xml:space="preserve">
+    <value>Wybierz Pokój</value>
+  </data>
+  <data name="Loading rooms..." xml:space="preserve">
+    <value>Ładowanie pokoi...</value>
+  </data>
+  <data name="Showing only available rooms" xml:space="preserve">
+    <value>Pokazuje tylko dostępne pokoje</value>
+  </data>
+  <data name="Loading services..." xml:space="preserve">
+    <value>Ładowanie usług...</value>
+  </data>
+  <data name="Add Service to Reservation" xml:space="preserve">
+    <value>Dodaj Usługę do Rezerwacji</value>
+  </data>
+  <data name="Select Service" xml:space="preserve">
+    <value>Wybierz Usługę</value>
+  </data>
+  <data name="Select Service..." xml:space="preserve">
+    <value>Wybierz Usługę...</value>
+  </data>
+  <data name="Select Room..." xml:space="preserve">
+    <value>Wybierz Pokój...</value>
+  </data>
+  <data name="Reservation Details" xml:space="preserve">
+    <value>Szczegóły Rezerwacji</value>
+  </data>
+  <data name="Room Details" xml:space="preserve">
+    <value>Szczegóły Pokoju</value>
+  </data>
+  <data name="Service Details" xml:space="preserve">
+    <value>Szczegóły Usługi</value>
+  </data>
+  <data name="Available" xml:space="preserve">
+    <value>Dostępny</value>
+  </data>
+  <data name="Occupied" xml:space="preserve">
+    <value>Zajęty</value>
+  </data>
+  <data name="No description available." xml:space="preserve">
+    <value>Brak dostępnego opisu.</value>
+  </data>
+  <data name="Could not delete reservation." xml:space="preserve">
+    <value>Nie można usunąć rezerwacji.</value>
+  </data>
+  <data name="Could not delete guest. They may have active reservations." xml:space="preserve">
+    <value>Nie można usunąć gościa. Może mieć aktywne rezerwacje.</value>
+  </data>
+  <data name="Unknown" xml:space="preserve">
+    <value>Nieznany</value>
+  </data>
+</root>

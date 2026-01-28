@@ -31,7 +31,17 @@ function switchTab(tabName) {
 
 // Formatters
 function formatCurrency(amount) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    let locale = 'en-US';
+    if (typeof currentCulture !== 'undefined') {
+        locale = currentCulture;
+    }
+    // Simple mapping: if polish, use PLN, else USD default
+    let currency = 'USD';
+    if (locale.startsWith('pl') || locale === 'pl') {
+        currency = 'PLN';
+    }
+    
+    return new Intl.NumberFormat(locale, { style: 'currency', currency: currency }).format(amount);
 }
 
 function formatDate(dateString) {
@@ -39,14 +49,22 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString();
 }
 
+// Helper to get localized string or fallback
+function t(key) {
+    if (typeof resources !== 'undefined' && resources[key]) {
+        return resources[key];
+    }
+    return key;
+}
+
 // Guest Functions
 function loadGuests() {
     $.get(`${apiBaseUrl}/guests`, function(data) {
         guests = data;
-        let html = '<table class="table table-hover"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead><tbody>';
+        let html = `<table class="table table-hover"><thead><tr><th>${t("ID")}</th><th>${t("Name")}</th><th>${t("Email")}</th><th>${t("Phone")}</th><th>${t("Actions")}</th></tr></thead><tbody>`;
         
         if (data.length === 0) {
-            html += '<tr><td colspan="5" class="text-center">No guests found</td></tr>';
+            html += `<tr><td colspan="5" class="text-center">${t("No guests found")}</td></tr>`;
         } else {
             data.forEach(guest => {
                 html += `<tr>
@@ -55,7 +73,7 @@ function loadGuests() {
                     <td>${guest.email}</td>
                     <td>${guest.phone || '-'}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteGuest(${guest.guestID})">Delete</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteGuest(${guest.guestID})">${t("Delete")}</button>
                     </td>
                 </tr>`;
             });
@@ -92,16 +110,16 @@ function createGuest() {
         success: function() {
             bootstrap.Modal.getInstance('#addGuestModal').hide();
             loadGuests();
-            alert('Guest created successfully!');
+            alert(t('Guest created successfully!'));
         },
         error: function(xhr) {
-            alert('Error creating guest: ' + xhr.statusText);
+            alert(t('Error creating guest: ') + xhr.statusText);
         }
     });
 }
 
 function deleteGuest(id) {
-    if (!confirm('Are you sure you want to delete this guest?')) return;
+    if (!confirm(t('Are you sure you want to delete this guest?'))) return;
     
     $.ajax({
         url: `${apiBaseUrl}/guests/${id}`,
@@ -110,7 +128,7 @@ function deleteGuest(id) {
             loadGuests();
         },
         error: function() {
-            alert('Could not delete guest. They may have active reservations.');
+            alert(t('Could not delete guest. They may have active reservations.'));
         }
     });
 }
@@ -121,17 +139,17 @@ function loadRooms(availableOnly = false) {
     
     $.get(endpoint, function(data) {
         rooms = data;
-        let html = '<table class="table table-hover"><thead><tr><th>Room #</th><th>Type</th><th>Capacity</th><th>Price</th><th>Status</th></tr></thead><tbody>';
+        let html = `<table class="table table-hover"><thead><tr><th>${t("Room #")}</th><th>${t("Type")}</th><th>${t("Capacity")}</th><th>${t("Price")}</th><th>${t("Status")}</th></tr></thead><tbody>`;
         
         if (data.length === 0) {
-            html += '<tr><td colspan="5" class="text-center">No rooms found</td></tr>';
+            html += `<tr><td colspan="5" class="text-center">${t("No rooms found")}</td></tr>`;
         } else {
             data.forEach(room => {
                 const statusBadge = room.status === 'Available' ? 'bg-success' : 'bg-secondary';
                 html += `<tr style="cursor: pointer;" onclick="showRoomDetails(${room.roomID})">
                     <td><strong>${room.roomNumber}</strong></td>
-                    <td>${room.roomType ? room.roomType.typeName : 'Unknown'}</td>
-                    <td>${room.capacity} pers.</td>
+                    <td>${room.roomType ? room.roomType.typeName : t('Unknown')}</td>
+                    <td>${room.capacity} ${t("pers.")}</td>
                     <td>${formatCurrency(room.pricePerNight)}</td>
                     <td><span class="badge ${statusBadge}">${room.status}</span></td>
                 </tr>`;
@@ -149,14 +167,14 @@ function showRoomDetails(id) {
     
     let html = `
         <div class="mb-3">
-            <h3>Room ${room.roomNumber}</h3>
-            <span class="badge ${room.status === 'Available' ? 'bg-success' : 'bg-secondary'} mb-3">${room.status}</span>
+            <h3>${t("Room #")} ${room.roomNumber}</h3>
+            <span class="badge ${room.status === 'Available' ? 'bg-success' : 'bg-secondary'} mb-3">${t(room.status)}</span>
         </div>
         <p>
-            <strong>Type:</strong> ${room.roomType ? room.roomType.typeName : 'Unknown'}<br>
-            <strong>Standard:</strong> ${room.roomType ? room.roomType.standard : '-'}<br>
-            <strong>Capacity:</strong> ${room.capacity} Persons<br>
-            <strong>Price per Night:</strong> ${formatCurrency(room.pricePerNight)}
+            <strong>${t("Type")}:</strong> ${room.roomType ? room.roomType.typeName : t('Unknown')}<br>
+            <strong>${t("Standard")}:</strong> ${room.roomType ? room.roomType.standard : '-'}<br>
+            <strong>${t("Capacity")}:</strong> ${room.capacity} ${t("pers.")}<br>
+            <strong>${t("Price per Night")}:</strong> ${formatCurrency(room.pricePerNight)}
         </p>
         <p class="text-muted small">
             ${room.roomType && room.roomType.description ? room.roomType.description : ''}
@@ -171,10 +189,10 @@ function showRoomDetails(id) {
 function loadServices() {
     $.get(`${apiBaseUrl}/services`, function(data) {
         services = data;
-        let html = '<table class="table table-hover"><thead><tr><th>Service</th><th>Description</th><th>Price</th><th>Availability</th></tr></thead><tbody>';
+        let html = `<table class="table table-hover"><thead><tr><th>${t("Service")}</th><th>${t("Description")}</th><th>${t("Price")}</th><th>${t("Availability")}</th></tr></thead><tbody>`;
         
         if (data.length === 0) {
-            html += '<tr><td colspan="4" class="text-center">No services found</td></tr>';
+            html += `<tr><td colspan="4" class="text-center">${t("No services found")}</td></tr>`;
         } else {
             data.forEach(service => {
                 html += `<tr style="cursor: pointer;" onclick="showServiceDetails(${service.serviceID})">
@@ -199,9 +217,9 @@ function showServiceDetails(id) {
         <h3>${service.serviceName}</h3>
         <p class="lead">${formatCurrency(service.unitPrice)}</p>
         <p>
-            <strong>Availability:</strong> ${service.availability}<br>
+            <strong>${t("Availability")}:</strong> ${t(service.availability)}<br>
         </p>
-        <p>${service.description || 'No description available.'}</p>
+        <p>${service.description || t('No description available.')}</p>
     `;
     
     $('#serviceDetailsContent').html(html);
@@ -212,26 +230,26 @@ function showServiceDetails(id) {
 function loadReservations() {
     $.get(`${apiBaseUrl}/reservations`, function(data) {
         reservations = data;
-        let html = '<table class="table table-hover"><thead><tr><th>ID</th><th>Guest</th><th>Dates</th><th>Rooms</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        let html = `<table class="table table-hover"><thead><tr><th>${t("ID")}</th><th>${t("Guest")}</th><th>${t("Dates")}</th><th>${t("rooms")}</th><th>${t("Total")}</th><th>${t("Status")}</th><th>${t("Actions")}</th></tr></thead><tbody>`;
         
         if (data.length === 0) {
-            html += '<tr><td colspan="7" class="text-center">No reservations found</td></tr>';
+            html += `<tr><td colspan="7" class="text-center">${t("No reservations found")}</td></tr>`;
         } else {
             data.forEach(res => {
-                const guestName = res.guest ? `${res.guest.firstName} ${res.guest.lastName}` : 'Unknown';
+                const guestName = res.guest ? `${res.guest.firstName} ${res.guest.lastName}` : t('Unknown');
                 const roomCount = res.reservationRooms ? res.reservationRooms.length : 0;
                 
                 html += `<tr style="cursor: pointer;" onclick="showReservationDetails(${res.reservationID}, event)">
                     <td>${res.reservationID}</td>
                     <td>${guestName}</td>
                     <td>${formatDate(res.checkInDate)} - ${formatDate(res.checkOutDate)}</td>
-                    <td>${roomCount} rooms</td>
+                    <td>${roomCount} ${t("rooms")}</td>
                     <td>${formatCurrency(res.totalPrice)}</td>
                     <td>${res.reservationStatus}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="showAddRoomToReservation(${res.reservationID}, event)">Add Room</button>
-                        <button class="btn btn-sm btn-outline-info me-1" onclick="showAddServiceToReservation(${res.reservationID}, event)">Add Service</button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReservation(${res.reservationID}, event)">Delete</button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="showAddRoomToReservation(${res.reservationID}, event)">${t("Add Room")}</button>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="showAddServiceToReservation(${res.reservationID}, event)">${t("Add Service")}</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteReservation(${res.reservationID}, event)">${t("Delete")}</button>
                     </td>
                 </tr>`;
             });
@@ -254,27 +272,27 @@ function showReservationDetails(id, event) {
     let html = `
         <div class="row mb-3">
             <div class="col-md-6">
-                <h6>Guest Information</h6>
+                <h6>${t("Guest Information")}</h6>
                 <p>
-                    <strong>Name:</strong> ${reservation.guest ? reservation.guest.firstName + ' ' + reservation.guest.lastName : 'Unknown'}<br>
-                    <strong>Email:</strong> ${reservation.guest ? reservation.guest.email : '-'}<br>
-                    <strong>Phone:</strong> ${reservation.guest ? reservation.guest.phone || '-' : '-'}
+                    <strong>${t("Name")}:</strong> ${reservation.guest ? reservation.guest.firstName + ' ' + reservation.guest.lastName : t('Unknown')}<br>
+                    <strong>${t("Email")}:</strong> ${reservation.guest ? reservation.guest.email : '-'}<br>
+                    <strong>${t("Phone")}:</strong> ${reservation.guest ? reservation.guest.phone || '-' : '-'}
                 </p>
             </div>
             <div class="col-md-6">
-                <h6>Reservation Info</h6>
+                <h6>${t("Reservation Info")}</h6>
                 <p>
-                    <strong>ID:</strong> #${reservation.reservationID}<br>
-                    <strong>Dates:</strong> ${formatDate(reservation.checkInDate)} - ${formatDate(reservation.checkOutDate)}<br>
-                    <strong>Status:</strong> ${reservation.reservationStatus}<br>
-                    <strong>Total Price:</strong> ${formatCurrency(reservation.totalPrice)}
+                    <strong>${t("ID")}:</strong> #${reservation.reservationID}<br>
+                    <strong>${t("Dates")}:</strong> ${formatDate(reservation.checkInDate)} - ${formatDate(reservation.checkOutDate)}<br>
+                    <strong>${t("Status")}:</strong> ${reservation.reservationStatus}<br>
+                    <strong>${t("Total Price")}:</strong> ${formatCurrency(reservation.totalPrice)}
                 </p>
             </div>
         </div>
         
-        <h6>Rooms</h6>
+        <h6>${t("Rooms")}</h6>
         <table class="table table-sm table-bordered mb-3">
-            <thead><tr><th>Room #</th><th>Type</th><th>Price/Night</th></tr></thead>
+            <thead><tr><th>${t("Room #")}</th><th>${t("Type")}</th><th>${t("Price/Night")}</th></tr></thead>
             <tbody>
     `;
 
@@ -287,16 +305,16 @@ function showReservationDetails(id, event) {
             </tr>`;
         });
     } else {
-        html += '<tr><td colspan="3" class="text-center text-muted">No rooms assigned</td></tr>';
+        html += `<tr><td colspan="3" class="text-center text-muted">${t("No rooms assigned")}</td></tr>`;
     }
 
     html += `
             </tbody>
         </table>
 
-        <h6>Services</h6>
+        <h6>${t("Services")}</h6>
         <table class="table table-sm table-bordered">
-            <thead><tr><th>Service</th><th>Date</th><th>Quantity</th><th>Unit Price</th></tr></thead>
+            <thead><tr><th>${t("Service")}</th><th>${t("Date")}</th><th>${t("Quantity")}</th><th>${t("Unit Price")}</th></tr></thead>
             <tbody>
     `;
 
@@ -310,7 +328,7 @@ function showReservationDetails(id, event) {
             </tr>`;
         });
     } else {
-        html += '<tr><td colspan="4" class="text-center text-muted">No extra services</td></tr>';
+        html += `<tr><td colspan="4" class="text-center text-muted">${t("No extra services")}</td></tr>`;
     }
 
     html += `</tbody></table>`;
@@ -321,7 +339,7 @@ function showReservationDetails(id, event) {
 
 function deleteReservation(id, event) {
     if (event) event.stopPropagation();
-    if (!confirm('Are you sure you want to delete this reservation?')) return;
+    if (!confirm(t('Are you sure you want to delete this reservation?'))) return; // Localized
     
     $.ajax({
         url: `${apiBaseUrl}/reservations/${id}`,
@@ -330,7 +348,7 @@ function deleteReservation(id, event) {
             loadReservations();
         },
         error: function() {
-            alert('Could not delete reservation.');
+            alert(t('Could not delete reservation.')); // Need to add this key if not present, but for now simple alert.
         }
     });
 }
@@ -338,7 +356,7 @@ function deleteReservation(id, event) {
 function updateGuestSelect() {
     const select = $('#reservationGuestSelect');
     select.empty();
-    select.append('<option value="">Select Guest...</option>');
+    select.append(`<option value="">${t("Select Guest...")}</option>`); // Localized
     
     guests.forEach(guest => {
         select.append(`<option value="${guest.guestID}">${guest.firstName} ${guest.lastName}</option>`);
@@ -377,10 +395,10 @@ function createReservation() {
         success: function(response) {
             bootstrap.Modal.getInstance('#addReservationModal').hide();
             loadReservations();
-            alert(`Reservation #${response.reservationID} created!`);
+            alert(t('Reservation #') + response.reservationID + t(' created!'));
         },
         error: function(xhr) {
-            alert('Error creating reservation: ' + xhr.statusText);
+            alert(t('Error creating reservation: ') + xhr.statusText);
         }
     });
 }
@@ -394,7 +412,7 @@ function showAddRoomToReservation(reservationId, event) {
     $.get(`${apiBaseUrl}/rooms/available`, function(data) {
         const select = $('#roomSelect');
         select.empty();
-        select.append('<option value="">Select Room...</option>');
+        select.append(`<option value="">${t("Select Room...")}</option>`); // Localized
         
         data.forEach(room => {
             select.append(`<option value="${room.roomID}">${room.roomNumber} - ${room.roomType ? room.roomType.typeName : ''} (${formatCurrency(room.pricePerNight)})</option>`);
@@ -419,7 +437,7 @@ function submitAddRoom() {
         success: function() {
             bootstrap.Modal.getInstance('#addRoomToReservationModal').hide();
             loadReservations(); // This reloads the table with updated prices
-            alert('Room added successfully!');
+            alert(t('Room added successfully!'));
         },
         error: function(xhr) {
             alert('Error adding room: ' + xhr.statusText);
@@ -440,7 +458,7 @@ function showAddServiceToReservation(reservationId, event) {
     $.get(`${apiBaseUrl}/services`, function(data) {
         const select = $('#serviceSelect');
         select.empty();
-        select.append('<option value="">Select Service...</option>');
+        select.append(`<option value="">${t("Select Service...")}</option>`); // Localized
         
         data.forEach(service => {
             select.append(`<option value="${service.serviceID}">${service.serviceName} (${formatCurrency(service.unitPrice)})</option>`);
@@ -474,7 +492,7 @@ function submitAddService() {
         success: function() {
             bootstrap.Modal.getInstance('#addServiceToReservationModal').hide();
             loadReservations(); // This reloads the table with updated prices
-            alert('Service added successfully!');
+            alert(t('Service added successfully!'));
         },
         error: function(xhr) {
             alert('Error adding service: ' + xhr.statusText);

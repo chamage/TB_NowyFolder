@@ -1,69 +1,74 @@
 ﻿@page
 @model IndexModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@using Microsoft.AspNetCore.Localization
 @{
-    ViewData["Title"] = "Hotel Reservation System";
+    ViewData["Title"] = Localizer["Hotel Reservation System"];
+    var requestCulture = ViewContext.HttpContext.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture.UICulture.Name ?? "en-US";
 }
 
 <div class="text-center mb-5">
-    <h1 class="display-4">Hotel Reservation System</h1>
-    <p class="lead">Manage your guests, rooms, and reservations easily.</p>
+    <h1 class="display-4">@Localizer["Hotel Reservation System"]</h1>
+    <p class="lead">@Localizer["Manage your guests, rooms, and reservations easily."]</p>
 </div>
 
 <div class="row mb-4">
     <div class="col-md-3">
         <div class="list-group">
-            <button type="button" class="list-group-item list-group-item-action active" id="tab-guests" onclick="switchTab('guests')">Guests</button>
-            <button type="button" class="list-group-item list-group-item-action" id="tab-rooms" onclick="switchTab('rooms')">Rooms</button>
-            <button type="button" class="list-group-item list-group-item-action" id="tab-services" onclick="switchTab('services')">Services</button>
-            <button type="button" class="list-group-item list-group-item-action" id="tab-reservations" onclick="switchTab('reservations')">Reservations</button>
+            <button type="button" class="list-group-item list-group-item-action active" id="tab-guests" onclick="switchTab('guests')">@Localizer["Guests"]</button>
+            <button type="button" class="list-group-item list-group-item-action" id="tab-rooms" onclick="switchTab('rooms')">@Localizer["Rooms"]</button>
+            <button type="button" class="list-group-item list-group-item-action" id="tab-services" onclick="switchTab('services')">@Localizer["Services"]</button>
+            <button type="button" class="list-group-item list-group-item-action" id="tab-reservations" onclick="switchTab('reservations')">@Localizer["Reservations"]</button>
         </div>
     </div>
     <div class="col-md-9">
         <!-- Guests Section -->
         <div id="section-guests" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Guest Management</h3>
-                <button class="btn btn-primary btn-sm" onclick="showAddGuestModal()">Add Guest</button>
+                <h3>@Localizer["Guest Management"]</h3>
+                <button class="btn btn-primary btn-sm" onclick="showAddGuestModal()">@Localizer["Add Guest"]</button>
             </div>
             <div id="guests-list" class="table-responsive">
-                <p>Loading guests...</p>
+                <p>@Localizer["Loading guests..."]</p>
             </div>
         </div>
 
         <!-- Rooms Section -->
         <div id="section-rooms" class="content-section d-none">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Room Management</h3>
-                <button class="btn btn-primary btn-sm" onclick="showAddRoomModal()">Add Room</button>
+                <h3>@Localizer["Room Management"]</h3>
+                <button class="btn btn-primary btn-sm" onclick="showAddRoomModal()">@Localizer["Add Room"]</button>
             </div>
             <div class="mb-3">
-                <button class="btn btn-outline-secondary btn-sm" onclick="loadRooms(true)">Show Available Only</button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="loadRooms(false)">Show All</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadRooms(true)">@Localizer["Show Available Only"]</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadRooms(false)">@Localizer["Show All"]</button>
             </div>
             <div id="rooms-list" class="table-responsive">
-                <p>Loading rooms...</p>
+                <p>@Localizer["Loading rooms..."]</p>
             </div>
         </div>
 
         <!-- Services Section -->
         <div id="section-services" class="content-section d-none">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Service Management</h3>
-                <button class="btn btn-primary btn-sm" onclick="showAddServiceModal()">Add Service</button>
+                <h3>@Localizer["Service Management"]</h3>
+                <button class="btn btn-primary btn-sm" onclick="showAddServiceModal()">@Localizer["Add Service"]</button>
             </div>
             <div id="services-list" class="table-responsive">
-                <p>Loading services...</p>
+                <p>@Localizer["Loading services..."]</p>
             </div>
         </div>
 
         <!-- Reservations Section -->
         <div id="section-reservations" class="content-section d-none">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3>Reservation Management</h3>
-                <button class="btn btn-primary btn-sm" onclick="showAddReservationModal()">New Reservation</button>
+                <h3>@Localizer["Reservation Management"]</h3>
+                <button class="btn btn-primary btn-sm" onclick="showAddReservationModal()">@Localizer["New Reservation"]</button>
             </div>
             <div id="reservations-list" class="table-responsive">
-                <p>Loading reservations...</p>
+                <p>@Localizer["Loading reservations..."]</p>
             </div>
         </div>
     </div>
@@ -74,7 +79,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Room Details</h5>
+                <h5 class="modal-title">@Localizer["Room Details"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -89,7 +94,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Service Details</h5>
+                <h5 class="modal-title">@Localizer["Service Details"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -104,7 +109,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Reservation Details</h5>
+                <h5 class="modal-title">@Localizer["Reservation Details"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -124,32 +129,32 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New Guest</h5>
+                <h5 class="modal-title">@Localizer["Add New Guest"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="addGuestForm">
                     <div class="mb-3">
-                        <label class="form-label">First Name</label>
+                        <label class="form-label">@Localizer["First Name"]</label>
                         <input type="text" class="form-control" name="firstName" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Last Name</label>
+                        <label class="form-label">@Localizer["Last Name"]</label>
                         <input type="text" class="form-control" name="lastName" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">@Localizer["Email"]</label>
                         <input type="email" class="form-control" name="email" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Phone</label>
+                        <label class="form-label">@Localizer["Phone"]</label>
                         <input type="text" class="form-control" name="phone">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="createGuest()">Save Guest</button>
+                <button type="button" class="btn btn-primary" onclick="createGuest()">@Localizer["Save Guest"]</button>
             </div>
         </div>
     </div>
@@ -160,36 +165,36 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">New Reservation</h5>
+                <h5 class="modal-title">@Localizer["New Reservation"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="addReservationForm">
                     <div class="mb-3">
-                        <label class="form-label">Guest</label>
+                        <label class="form-label">@Localizer["Guest"]</label>
                         <select class="form-select" name="guestID" id="reservationGuestSelect" required>
-                            <option value="">Select Guest...</option>
+                            <option value="">@Localizer["Select Guest..."]</option>
                         </select>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Check In</label>
+                            <label class="form-label">@Localizer["Check In"]</label>
                             <input type="date" class="form-control" name="checkInDate" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Check Out</label>
+                            <label class="form-label">@Localizer["Check Out"]</label>
                             <input type="date" class="form-control" name="checkOutDate" required>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Number of Guests</label>
+                        <label class="form-label">@Localizer["Number of Guests"]</label>
                         <input type="number" class="form-control" name="numberOfGuests" value="1" min="1" required>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="createReservation()">Create Reservation</button>
+                <button type="button" class="btn btn-primary" onclick="createReservation()">@Localizer["Create Reservation"]</button>
             </div>
         </div>
     </div>
@@ -200,22 +205,22 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Room to Reservation</h5>
+                <h5 class="modal-title">@Localizer["Add Room to Reservation"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="roomReservationId">
                 <div class="mb-3">
-                    <label class="form-label">Select Room</label>
+                    <label class="form-label">@Localizer["Select Room"]</label>
                     <select class="form-select" id="roomSelect" required>
-                        <option value="">Loading rooms...</option>
+                        <option value="">@Localizer["Loading rooms..."]</option>
                     </select>
-                    <div class="form-text">Showing only available rooms</div>
+                    <div class="form-text">@Localizer["Showing only available rooms"]</div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="submitAddRoom()">Add Room</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddRoom()">@Localizer["Add Room"]</button>
             </div>
         </div>
     </div>
@@ -226,34 +231,93 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add Service to Reservation</h5>
+                <h5 class="modal-title">@Localizer["Add Service to Reservation"]</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="serviceReservationId">
                 <div class="mb-3">
-                    <label class="form-label">Select Service</label>
+                    <label class="form-label">@Localizer["Select Service"]</label>
                     <select class="form-select" id="serviceSelect" required>
-                        <option value="">Loading services...</option>
+                        <option value="">@Localizer["Loading services..."]</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Quantity</label>
+                    <label class="form-label">@Localizer["Quantity"]</label>
                     <input type="number" class="form-control" id="serviceQuantity" value="1" min="1" required>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Date</label>
+                    <label class="form-label">@Localizer["Date"]</label>
                     <input type="date" class="form-control" id="serviceDate" required>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="submitAddService()">Add Service</button>
+                <button type="button" class="btn btn-primary" onclick="submitAddService()">@Localizer["Add Service"]</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Scripts Section with Localization for JS -->
 @section Scripts {
+    <script>
+        const currentCulture = "@currentCulture";
+        // Dictionary for JS localization
+        const resources = {
+            "ID": "@Localizer["ID"]",
+            "Name": "@Localizer["Name"]",
+            "Email": "@Localizer["Email"]",
+            "Phone": "@Localizer["Phone"]",
+            "Actions": "@Localizer["Actions"]",
+            "No guests found": "@Localizer["No guests found"]",
+            "Delete": "@Localizer["Delete"]",
+            "Room #": "@Localizer["Room #"]",
+            "Type": "@Localizer["Type"]",
+            "Capacity": "@Localizer["Capacity"]",
+            "Price": "@Localizer["Price"]",
+            "Status": "@Localizer["Status"]",
+            "No rooms found": "@Localizer["No rooms found"]",
+            "pers.": "@Localizer["pers."]",
+            "Service": "@Localizer["Service"]",
+            "Description": "@Localizer["Description"]",
+            "Availability": "@Localizer["Availability"]",
+            "No services found": "@Localizer["No services found"]",
+            "Guest": "@Localizer["Guest"]",
+            "Dates": "@Localizer["Dates"]",
+            "Rooms": "@Localizer["Rooms"]",
+            "Total": "@Localizer["Total"]",
+            "No reservations found": "@Localizer["No reservations found"]",
+            "rooms": "@Localizer["rooms"]",
+            "Add Room": "@Localizer["Add Room"]",
+            "Add Service": "@Localizer["Add Service"]",
+            "Are you sure you want to delete this guest?": "@Localizer["Are you sure you want to delete this guest?"]",
+            "Guest created successfully!": "@Localizer["Guest created successfully!"]",
+            "Error creating guest: ": "@Localizer["Error creating guest: "]",
+            "Reservation #": "@Localizer["Reservation #"]",
+            " created!": "@Localizer[" created!"]",
+            "Error creating reservation: ": "@Localizer["Error creating reservation: "]",
+            "Room added successfully!": "@Localizer["Room added successfully!"]",
+            "Service added successfully!": "@Localizer["Service added successfully!"]",
+            "Guest Information": "@Localizer["Guest Information"]",
+            "Reservation Info": "@Localizer["Reservation Info"]",
+            "Total Price": "@Localizer["Total Price"]",
+            "Price/Night": "@Localizer["Price/Night"]",
+            "Date": "@Localizer["Date"]",
+            "Quantity": "@Localizer["Quantity"]",
+            "Unit Price": "@Localizer["Unit Price"]",
+            "No rooms assigned": "@Localizer["No rooms assigned"]",
+            "No extra services": "@Localizer["No extra services"]",
+            "Standard": "@Localizer["Standard"]",
+            "Price per Night": "@Localizer["Price per Night"]",
+            "Select Service...": "@Localizer["Select Service..."]",
+            "Select Room...": "@Localizer["Select Room..."]",
+            "Occupied": "@Localizer["Occupied"]",
+            "No description available.": "@Localizer["No description available."]",
+            "Could not delete reservation.": "@Localizer["Could not delete reservation."]",
+            "Could not delete guest. They may have active reservations.": "@Localizer["Could not delete guest. They may have active reservations."]",
+            "Unknown": "@Localizer["Unknown"]"
+        };
+    </script>
     <script src="~/js/api-client.js" asp-append-version="true"></script>
 }
