@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TB_NowyFolder.Models;
 
@@ -19,6 +20,7 @@ public class ReservationRoom
     public decimal PricePerNight { get; set; }
 
     // Navigation properties
+    [JsonIgnore]
     [ForeignKey(nameof(ReservationID))]
     public virtual Reservation? Reservation { get; set; }
 

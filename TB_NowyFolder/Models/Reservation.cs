@@ -37,9 +37,7 @@ public class Reservation
     [ForeignKey(nameof(GuestID))]
     public virtual Guest? Guest { get; set; }
 
-    [JsonIgnore]
     public virtual ICollection<ReservationRoom>? ReservationRooms { get; set; }
 
-    [JsonIgnore]
     public virtual ICollection<ReservationService>? ReservationServices { get; set; }
 }

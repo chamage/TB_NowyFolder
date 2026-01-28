@@ -90,8 +90,24 @@ public static class ReservationEndpoints
         // DELETE reservation
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
-            var reservation = await db.Reservations.FindAsync(id);
+            var reservation = await db.Reservations
+                .Include(r => r.ReservationRooms)
+                .ThenInclude(rr => rr.Room)
+                .FirstOrDefaultAsync(r => r.ReservationID == id);
+
             if (reservation is null) return Results.NotFound();
+
+            // Set rooms back to Available
+            if (reservation.ReservationRooms != null)
+            {
+                foreach (var rr in reservation.ReservationRooms)
+                {
+                    if (rr.Room != null)
+                    {
+                        rr.Room.Status = "Available";
+                    }
+                }
+            }
 
             db.Reservations.Remove(reservation);
             await db.SaveChangesAsync();
@@ -104,11 +120,20 @@ public static class ReservationEndpoints
         // POST add room to reservation
         group.MapPost("/{reservationId}/rooms/{roomId}", async (int reservationId, int roomId, HotelDbContext db) =>
         {
-            var reservation = await db.Reservations.FindAsync(reservationId);
+            var reservation = await db.Reservations
+                .Include(r => r.ReservationRooms) // Include existing rooms to check duplicates
+                .FirstOrDefaultAsync(r => r.ReservationID == reservationId);
+                
             var room = await db.Rooms.FindAsync(roomId);
 
             if (reservation is null || room is null)
                 return Results.NotFound();
+            
+            // Check if room is already added
+            if (reservation.ReservationRooms?.Any(rr => rr.RoomID == roomId) == true)
+            {
+                return Results.Conflict("Room is already added to this reservation.");
+            }
 
             var reservationRoom = new ReservationRoom
             {
@@ -116,6 +141,16 @@ public static class ReservationEndpoints
                 RoomID = roomId,
                 PricePerNight = room.PricePerNight
             };
+
+            // Calculate nights for pricing
+            int nights = reservation.CheckOutDate.DayNumber - reservation.CheckInDate.DayNumber;
+            if (nights < 1) nights = 1;
+
+            // Update total price
+            reservation.TotalPrice += room.PricePerNight * nights;
+            
+            // Mark room as Occupied so it doesn't show in Available list
+            room.Status = "Occupied";
 
             db.ReservationRooms.Add(reservationRoom);
             await db.SaveChangesAsync();
@@ -141,6 +176,9 @@ public static class ReservationEndpoints
                 Quantity = input.Quantity,
                 ServiceDate = input.ServiceDate
             };
+
+            // Update total price
+            reservation.TotalPrice += service.UnitPrice * input.Quantity;
 
             db.ReservationServices.Add(reservationService);
             await db.SaveChangesAsync();
