@@ -167,6 +167,52 @@ function showRoomDetails(id) {
     new bootstrap.Modal('#roomDetailsModal').show();
 }
 
+function showAddRoomModal() {
+    // Load room types for the dropdown
+    $.get(`${apiBaseUrl}/roomtypes`, function(data) {
+        const select = $('#roomTypeSelect');
+        select.empty();
+        select.append('<option value="">Select Room Type...</option>');
+        
+        data.forEach(type => {
+            select.append(`<option value="${type.roomTypeID}">${type.typeName} - ${type.standard}</option>`);
+        });
+    });
+    
+    $('#addRoomForm')[0].reset();
+    new bootstrap.Modal('#addRoomModal').show();
+}
+
+function createRoom() {
+    const formData = {
+        roomNumber: $('#addRoomForm input[name="roomNumber"]').val(),
+        roomTypeID: parseInt($('#addRoomForm select[name="roomTypeID"]').val()),
+        capacity: parseInt($('#addRoomForm input[name="capacity"]').val()),
+        pricePerNight: parseFloat($('#addRoomForm input[name="pricePerNight"]').val()),
+        status: $('#addRoomForm select[name="status"]').val()
+    };
+    
+    if (!formData.roomTypeID) {
+        alert('Please select a room type');
+        return;
+    }
+    
+    $.ajax({
+        url: `${apiBaseUrl}/rooms`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function() {
+            bootstrap.Modal.getInstance('#addRoomModal').hide();
+            loadRooms();
+            alert('Room created successfully!');
+        },
+        error: function(xhr) {
+            alert('Error creating room: ' + xhr.statusText);
+        }
+    });
+}
+
 // Service Functions
 function loadServices() {
     $.get(`${apiBaseUrl}/services`, function(data) {
@@ -206,6 +252,35 @@ function showServiceDetails(id) {
     
     $('#serviceDetailsContent').html(html);
     new bootstrap.Modal('#serviceDetailsModal').show();
+}
+
+function showAddServiceModal() {
+    $('#addServiceForm')[0].reset();
+    new bootstrap.Modal('#addServiceModal').show();
+}
+
+function createService() {
+    const formData = {
+        serviceName: $('#addServiceForm input[name="serviceName"]').val(),
+        description: $('#addServiceForm textarea[name="description"]').val(),
+        unitPrice: parseFloat($('#addServiceForm input[name="unitPrice"]').val()),
+        availability: $('#addServiceForm select[name="availability"]').val()
+    };
+    
+    $.ajax({
+        url: `${apiBaseUrl}/services`,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(formData),
+        success: function() {
+            bootstrap.Modal.getInstance('#addServiceModal').hide();
+            loadServices();
+            alert('Service created successfully!');
+        },
+        error: function(xhr) {
+            alert('Error creating service: ' + xhr.statusText);
+        }
+    });
 }
 
 // Reservation Functions
