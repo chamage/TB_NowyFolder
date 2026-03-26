@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
+using TB_NowyFolder.Security;
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -16,6 +17,7 @@ public static class RoomEndpoints
         {
             return await db.Rooms.Include(r => r.RoomType).ToListAsync();
         })
+        .AllowAnonymous()
         .WithName("GetAllRooms")
         .Produces<List<Room>>(StatusCodes.Status200OK);
 
@@ -30,6 +32,7 @@ public static class RoomEndpoints
                 ? Results.Ok(room)
                 : Results.NotFound();
         })
+        .AllowAnonymous()
         .WithName("GetRoomById")
         .Produces<Room>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
@@ -42,6 +45,7 @@ public static class RoomEndpoints
                 .Where(r => r.Status == "Available")
                 .ToListAsync();
         })
+        .AllowAnonymous()
         .WithName("GetAvailableRooms")
         .Produces<List<Room>>(StatusCodes.Status200OK);
 
@@ -52,6 +56,7 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/rooms/{room.RoomID}", room);
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("CreateRoom")
         .Produces<Room>(StatusCodes.Status201Created);
 
@@ -70,6 +75,7 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("UpdateRoom")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -84,6 +90,7 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("DeleteRoom")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);

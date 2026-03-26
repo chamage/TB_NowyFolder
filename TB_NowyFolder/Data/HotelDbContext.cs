@@ -26,7 +26,7 @@ public class HotelDbContext : DbContext
             .HasKey(rr => new { rr.ReservationID, rr.RoomID });
 
         modelBuilder.Entity<ReservationService>()
-            .HasKey(rs => new { rs.ReservationID, rs.ServiceID });
+            .HasKey(rs => new { rs.ReservationID, rs.ServiceID, rs.ServiceDate });
 
         // Seed some initial data
         modelBuilder.Entity<RoomType>().HasData(
