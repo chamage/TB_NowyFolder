@@ -1,8 +1,8 @@
-# Diagramy UML — System Rezerwacji Hotelowej
+# Diagramy UML — System rezerwacji hotelowej
 
 Role w systemie:
-1. **Niezalogowany Użytkownik** (Gość) — przeglądanie oferty
-2. **Zalogowany Użytkownik** (Klient) — samodzielne rezerwacje i zarządzanie kontem
+1. **Niezalogowany użytkownik** (Gość) — przeglądanie oferty
+2. **Zalogowany użytkownik** (Klient) — samodzielne rezerwacje i zarządzanie kontem
 3. **Recepcjonista** (Obsługa klienta) — obsługa gości na miejscu, zameldowania, rezerwacje telefoniczne, fakturowanie
 4. **Administrator** — pełne zarządzanie systemem (konfiguracja pokoi, usług, cenników)
 
@@ -12,7 +12,7 @@ Role w systemie:
 
 ```mermaid
 graph LR
-    subgraph System Rezerwacji Hotelowej
+    subgraph System rezerwacji hotelowej
         UC1["Przeglądanie dostępnych pokoi"]
         UC2["Przeglądanie typów pokoi"]
         UC3["Przeglądanie usług hotelowych"]
@@ -35,8 +35,8 @@ graph LR
         UC20["Dodawanie usług w trakcie pobytu"]
     end
 
-    A1(("👤 Niezalogowany\nUżytkownik"))
-    A2(("👤 Zalogowany\nUżytkownik"))
+    A1(("👤 Niezalogowany użytkownik"))
+    A2(("👤 Zalogowany użytkownik"))
     A3(("👤 Recepcjonista"))
     A4(("👤 Administrator"))
 
