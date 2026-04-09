@@ -68,7 +68,7 @@ To unikalna architektura posiadaj¹ca tzw. sub-œcie¿ki operuj¹ce miêdzy relacjami
 
 ## 4. Krótki opis ¿¹dania i odpowiedzi (Przyk³ady ze Swaggera)
 
-Poni¿ej przedstawiono dwie wybrane œcie¿ki i pokaza³em jak proste jest modelowanie danych wzglêdem JSONa.
+Poni¿ej przedstawiono dwie wybrane œcie¿ki prezentuj¹ce w jaki sposób proste jest modelowanie danych wzglêdem formatu JSON.
 
 ### Odczyt dostêpnych pokoi: `GET /api/rooms/available`
 - **Request (¯¹danie)**: Akcja jest bezparametrowa – zwyk³e odebranie po podaniu URLa. Wystarczy puste uderzenie endpointu. Brak koniecznoœci przesy³ania Body JSON.
@@ -85,13 +85,13 @@ Poni¿ej przedstawiono dwie wybrane œcie¿ki i pokaza³em jak proste jest modelowan
   "status": "Available"
 }
 ```
-- **Response (OdpowiedŸ) [201 Created]**: System odbiera format, puszcza zapytanie INSERT do bazy za pomoc¹ powi¹zanego Entity Frameworka i nadaje nowy unikalny numer `roomID`. Odpowiedzi¹ jest ten sam rozbudowany JSON plus dodany automatycznie ID (co ostatecznie potwierdza pomyœlne przeprocesowanie).
+- **Response (OdpowiedŸ) [201 Created]**: System odbiera format, puszcza zapytanie INSERT do bazy za pomoc¹ powi¹zanego Entity Frameworka i nadaje nowy unikalny numer `roomID`. Odpowiedzi¹ jest ten sam rozbudowany JSON plus dodany automatycznie ID (co ostatecznie potwierdza pomyœlne przeprocessowanie).
 
 ---
 
 ## 5. Dane testowe do prezentacji w interfejsie Swagger
 
-Podczas zajêæ mo¿esz skorzystaæ z poni¿szych gotowych bloków w formacie JSON wklejaj¹c je w Swaggerze (przycisk **"Try it out"**) na odpowiednich endpointach z metod¹ `POST`. Upewnij siê tylko, ¿e w polu ID zawsze widnieje `0` (serwer nada numery ID samodzielnie w bazie danych).
+Podczas zajêæ mo¿na skorzystaæ z poni¿szych gotowych bloków w formacie JSON, wklejaj¹c je w Swaggerze (przycisk **"Try it out"**) na odpowiednich endpointach z metod¹ `POST`. Nale¿y tylko upewniæ siê, ¿e w polu ID zawsze widnieje `0` (serwer nada numery ID samodzielnie po trafieniu do bazy danych).
 
 ### A. Dodawanie Goœcia (`POST /api/guests`)
 Endpoint s³u¿y do rejestracji fizycznej osoby w systemie.
@@ -120,6 +120,8 @@ S³ownik wymuszaj¹cy zdefiniowanie "jakie w ogóle kwatery posiadamy".
 
 ### C. Dodawanie konkretnego Pokoju (`POST /api/rooms`)
 Tworzy fizyczny obiekt pokoju w ofercie. Nale¿y wpisaæ poprawne `roomTypeID` (jeœli w kroku wy¿ej podano Typ i serwer utworzy³ go z np. ID `1`, wpisz tutaj `1`).
+
+**UWAGA w Swaggerze:** Endpoint ten przyjmuje **tylko jeden pokój naraz**. Kopiuj tylko pierwszy obiekt JSON, nie u¿ywaj ca³ych tablic.
 ```json
 {
   "roomID": 0,
@@ -143,4 +145,27 @@ Definiuje to, co mo¿na w obiekcie dokupiæ dodatkowo do pobytu.
 }
 ```
 
-Wszystkie te zapytania wykonane po kolei wygeneruj¹ kod `201 Created` wype³niaj¹c lokaln¹ bazê danych, co œwietnie nakreœla dzia³anie warstwy logiki biznesowej i pozwala "nakarmiæ" aplikacjê sztucznymi danymi na czas pokazu.
+### E. Z³o¿enie kompletnej Rezerwacji (`POST /api/reservations`)
+Tworzy wpis o pobycie wraz z przypisanymi elementami. Wymagane jest wpisanie ID ju¿ istniej¹cego w bazie goœcia (`guestID`: 1), pokoju i ewentualnie us³ugi (które stworzone by³y w poprzednich krokach A-D).
+
+```json
+{
+  "reservationID": 0,
+  "guestID": 1,
+  "reservationDate": "2026-04-10T10:00:00.000Z",
+  "checkInDate": "2026-04-15",
+  "checkOutDate": "2026-04-20",
+  "numberOfGuests": 2,
+  "totalPrice": 1250.00,
+  "reservationStatus": "Confirmed"
+}
+```
+
+### F. Obs³uga ¿¹dañ GET, PUT i DELETE
+Powy¿sze przyk³ady skupiaj¹ siê na wprowadzaniu nowych danych (`POST`), co jest niezbêdne, aby wygenerowaæ pocz¹tkowe zasoby w pustej bazie. Po wype³nieniu systemu danymi wstêpnymi (kroki A-E), pozosta³e punkty dostêpowe mo¿na przetestowaæ w nastêpuj¹cy sposób:
+
+* **Odczyt zasobów (GET):** Endpoint obs³uguj¹cy zbiorcze pobieranie (np. `/api/guests`) nie wymaga wpisywania ¿adnych parametrów – zwraca od razu pe³n¹ listê. Aby odczytaæ obiekty pojedyncze (np. `/api/guests/{id}`), konieczne jest podanie nadanego wczeœniej w bazie numeru ID.
+* **Modyfikacja zasobów (PUT):** Do przetestowania edycji nale¿y wykorzystaæ œcie¿kê z parametrem wybranego ID (np. `/api/guests/{id}`) i przekazaæ w Body JSON odpowiednio zmodyfikowany model z nowymi wartoœciami (np. zmieniony numer telefonu).
+* **Usuwanie zasobów (DELETE):** ¯¹danie usuniêcia nie przyjmuje wartoœci w Body. Wymaga jedynie wskazania poprawnego numeru ID jako precyzyjnego celu do likwidacji (np. `/api/guests/{id}`).
+
+Poprawne wykonanie kompletu powy¿szych operacji wyczerpuj¹co weryfikuje logikê i stabilnoœæ systemu od momentu zapisu nowego wiersza, po jego edycjê i ostateczne skasowanie.
