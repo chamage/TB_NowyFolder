@@ -12,8 +12,8 @@ using TB_NowyFolder.Data;
 namespace TB_NowyFolder.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    [Migration("20251212083732_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260326183613_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,13 +151,13 @@ namespace TB_NowyFolder.Migrations
                         .HasColumnType("int")
                         .HasColumnOrder(1);
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.Property<DateOnly>("ServiceDate")
                         .HasColumnType("date");
 
-                    b.HasKey("ReservationID", "ServiceID");
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReservationID", "ServiceID", "ServiceDate");
 
                     b.HasIndex("ServiceID");
 

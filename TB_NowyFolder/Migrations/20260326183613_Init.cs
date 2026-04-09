@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace TB_NowyFolder.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -116,12 +116,12 @@ namespace TB_NowyFolder.Migrations
                 {
                     ReservationID = table.Column<int>(type: "int", nullable: false),
                     ServiceID = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    ServiceDate = table.Column<DateOnly>(type: "date", nullable: false)
+                    ServiceDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ReservationServices", x => new { x.ReservationID, x.ServiceID });
+                    table.PrimaryKey("PK_ReservationServices", x => new { x.ReservationID, x.ServiceID, x.ServiceDate });
                     table.ForeignKey(
                         name: "FK_ReservationServices_Reservations_ReservationID",
                         column: x => x.ReservationID,

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-using TB_NowyFolder.Security;
+
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -17,7 +17,7 @@ public static class RoomTypeEndpoints
         {
             return await db.RoomTypes.ToListAsync();
         })
-        .AllowAnonymous()
+        
         .WithName("GetAllRoomTypes")
         .Produces<List<RoomType>>(StatusCodes.Status200OK);
 
@@ -29,7 +29,7 @@ public static class RoomTypeEndpoints
                     ? Results.Ok(roomType)
                     : Results.NotFound();
         })
-        .AllowAnonymous()
+        
         .WithName("GetRoomTypeById")
         .Produces<RoomType>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
@@ -41,7 +41,6 @@ public static class RoomTypeEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/roomtypes/{roomType.RoomTypeID}", roomType);
         })
-        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("CreateRoomType")
         .Produces<RoomType>(StatusCodes.Status201Created);
 
@@ -58,7 +57,6 @@ public static class RoomTypeEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("UpdateRoomType")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -73,7 +71,6 @@ public static class RoomTypeEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("DeleteRoomType")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);

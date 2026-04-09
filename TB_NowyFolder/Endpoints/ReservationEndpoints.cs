@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
+
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-using TB_NowyFolder.Security;
+
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -25,35 +25,8 @@ public static class ReservationEndpoints
                     .ThenInclude(rs => rs.Service)
                 .ToListAsync();
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationRead)
         .WithName("GetAllReservations")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
-
-        // GET my reservations (Client)
-        group.MapGet("/my", async (ClaimsPrincipal user, HotelDbContext db) =>
-        {
-            if (!user.IsInRole(ApplicationRoles.Client))
-                return Results.Forbid();
-
-            if (!int.TryParse(user.FindFirstValue("guestId"), out var guestId))
-                return Results.Forbid();
-
-            var reservations = await db.Reservations
-                .Include(r => r.Guest)
-                .Include(r => r.ReservationRooms)
-                    .ThenInclude(rr => rr.Room)
-                        .ThenInclude(room => room.RoomType)
-                .Include(r => r.ReservationServices)
-                    .ThenInclude(rs => rs.Service)
-                .Where(r => r.GuestID == guestId)
-                .ToListAsync();
-
-            return Results.Ok(reservations);
-        })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
-        .WithName("GetMyReservations")
-        .Produces<List<Reservation>>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
 
         // GET reservation by ID
         group.MapGet("/{id}", async (int id, HotelDbContext db) =>
@@ -71,7 +44,6 @@ public static class ReservationEndpoints
                 ? Results.Ok(reservation)
                 : Results.NotFound();
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationRead)
         .WithName("GetReservationById")
         .Produces<Reservation>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
@@ -87,29 +59,18 @@ public static class ReservationEndpoints
                 .Where(r => r.GuestID == guestId)
                 .ToListAsync();
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationRead)
         .WithName("GetReservationsByGuest")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
         // POST create reservation
-        group.MapPost("/", async (Reservation reservation, ClaimsPrincipal user, HotelDbContext db) =>
+        group.MapPost("/", async (Reservation reservation, HotelDbContext db) =>
         {
-            if (user.IsInRole(ApplicationRoles.Client))
-            {
-                if (!int.TryParse(user.FindFirstValue("guestId"), out var guestId))
-                    return Results.Forbid();
-
-                reservation.GuestID = guestId;
-            }
-
             db.Reservations.Add(reservation);
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservation.ReservationID}", reservation);
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
         .WithName("CreateReservation")
-        .Produces<Reservation>(StatusCodes.Status201Created)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces<Reservation>(StatusCodes.Status201Created);
 
         // PUT update reservation
         group.MapPut("/{id}", async (int id, Reservation inputReservation, HotelDbContext db) =>
@@ -127,7 +88,6 @@ public static class ReservationEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
         .WithName("UpdateReservation")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -157,7 +117,6 @@ public static class ReservationEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
         .WithName("DeleteReservation")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -196,7 +155,6 @@ public static class ReservationEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservationId}/rooms/{roomId}", reservationRoom);
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
         .WithName("AddRoomToReservation")
         .Produces<ReservationRoom>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status404NotFound);
@@ -237,7 +195,6 @@ public static class ReservationEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservationId}/services/{serviceId}", reservationService);
         })
-        .RequireAuthorization(AuthorizationPolicies.ReservationCreateOrUpdate)
         .WithName("AddServiceToReservation")
         .Produces<ReservationService>(StatusCodes.Status201Created)
         .Produces<ReservationService>(StatusCodes.Status200OK)

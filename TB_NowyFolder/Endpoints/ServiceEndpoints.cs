@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-using TB_NowyFolder.Security;
+
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -17,7 +17,7 @@ public static class ServiceEndpoints
         {
             return await db.Services.ToListAsync();
         })
-        .AllowAnonymous()
+        
         .WithName("GetAllServices")
         .Produces<List<Service>>(StatusCodes.Status200OK);
 
@@ -29,7 +29,7 @@ public static class ServiceEndpoints
                     ? Results.Ok(service)
                     : Results.NotFound();
         })
-        .AllowAnonymous()
+        
         .WithName("GetServiceById")
         .Produces<Service>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
@@ -41,7 +41,7 @@ public static class ServiceEndpoints
                 .Where(s => s.Availability == "Available")
                 .ToListAsync();
         })
-        .AllowAnonymous()
+        
         .WithName("GetAvailableServices")
         .Produces<List<Service>>(StatusCodes.Status200OK);
 
@@ -52,7 +52,6 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/services/{service.ServiceID}", service);
         })
-        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("CreateService")
         .Produces<Service>(StatusCodes.Status201Created);
 
@@ -70,7 +69,6 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("UpdateService")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -85,7 +83,6 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
-        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("DeleteService")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
