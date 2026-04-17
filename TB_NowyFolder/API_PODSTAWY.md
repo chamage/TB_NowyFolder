@@ -1,81 +1,81 @@
-# Dokumentacja Wstêpnej Wersji REST API
+ï»¿# Dokumentacja WstÄ™pnej Wersji REST API
 
 ## 1. Cel i charakter zadania
-Zadanie polega³o na zaprojektowaniu i utworzeniu **wstêpnej wersji backendu** udostêpniaj¹cego operacje CRUD za pomoc¹ tzw. punktów dostêpu (endpointów).
+Zadanie polegaÅ‚o na zaprojektowaniu i utworzeniu **wstÄ™pnej wersji backendu** udostÄ™pniajÄ…cego operacje CRUD za pomocÄ… tzw. punktÃ³w dostÄ™pu (endpointÃ³w).
 
-G³ównym sposobem komunikacji z API i demonstracji dzia³ania na tym etapie jest interfejs **Swagger**, daj¹cy szybki wgl¹d we wszystkie utworzone œcie¿ki (routingi) i umo¿liwiaj¹cy rêczne wstrzykiwanie danych (np. rezerwacji czy nowych goœci).
+GÅ‚Ã³wnym sposobem komunikacji z API i demonstracji dziaÅ‚ania na tym etapie jest interfejs **Swagger**, dajÄ…cy szybki wglÄ…d we wszystkie utworzone Å›cieÅ¼ki (routingi) i umoÅ¼liwiajÄ…cy rÄ™czne wstrzykiwanie danych (np. rezerwacji czy nowych goÅ›ci).
 
 ---
 
-## 2. G³ówne zasoby API (Endpointy)
+## 2. GÅ‚Ã³wne zasoby API (Endpointy)
 
-Utworzone API zarz¹dza piêcioma g³ównymi "bytami" (zasobami) zwi¹zanymi z dzia³aniem agroturystyki:
+Utworzone API zarzÄ…dza piÄ™cioma gÅ‚Ã³wnymi "bytami" (zasobami) zwiÄ…zanymi z dziaÅ‚aniem agroturystyki:
 
-1. **Guests** (Goœcie u których przechowywane s¹ chocia¿by dane kontaktowe)
+1. **Guests** (GoÅ›cie u ktÃ³rych przechowywane sÄ… chociaÅ¼by dane kontaktowe)
 2. **Rooms** (Konkretne pokoje)
-3. **RoomTypes** (S³ownik dostêpnych konfiguracji, np. "Pokój dwuosobowy", "Apartament")
-4. **Services** (Us³ugi dodatkowe przypinane w locie)
-5. **Reservations** (Systemowy trzon spinaj¹cy goœci, us³ugi i pokoje w odpowiednim czasie)
+3. **RoomTypes** (SÅ‚ownik dostÄ™pnych konfiguracji, np. "PokÃ³j dwuosobowy", "Apartament")
+4. **Services** (UsÅ‚ugi dodatkowe przypinane w locie)
+5. **Reservations** (Systemowy trzon spinajÄ…cy goÅ›ci, usÅ‚ugi i pokoje w odpowiednim czasie)
 
 ---
 
-## 3. Pe³na lista endpointów REST API
+## 3. PeÅ‚na lista endpointÃ³w REST API
 
-Dla ka¿dego z zasobów zadeklarowane zosta³y standardowe akcje typu CRUD (Create, Read, Update, Delete) realizuj¹ce okreœlone zachowanie wobec bazy danych.
+Dla kaÅ¼dego z zasobÃ³w zadeklarowane zostaÅ‚y standardowe akcje typu CRUD (Create, Read, Update, Delete) realizujÄ…ce okreÅ›lone zachowanie wobec bazy danych.
 
-### Goœcie (`/api/guests`)
-* `GET /api/guests` – Wylistuj wszystkich goœci.
-* `GET /api/guests/{id}` – Zwróæ szczegó³y konkretnego goœcia.
-* `POST /api/guests` – Zarejestruj (utwórz) nowego goœcia.
-* `PUT /api/guests/{id}` – Zaaktualizuj dane goœcia o wskazanym ID.
-* `DELETE /api/guests/{id}` – Usuñ wskazanego goœcia z sytemu.
+### GoÅ›cie (`/api/guests`)
+* `GET /api/guests` â€“ Wylistuj wszystkich goÅ›ci.
+* `GET /api/guests/{id}` â€“ ZwrÃ³Ä‡ szczegÃ³Å‚y konkretnego goÅ›cia.
+* `POST /api/guests` â€“ Zarejestruj (utwÃ³rz) nowego goÅ›cia.
+* `PUT /api/guests/{id}` â€“ Zaaktualizuj dane goÅ›cia o wskazanym ID.
+* `DELETE /api/guests/{id}` â€“ UsuÅ„ wskazanego goÅ›cia z sytemu.
 
 ### Pokoje (`/api/rooms`)
-* `GET /api/rooms` – Wylistuj wszystkie pokoje.
-* `GET /api/rooms/{id}` – Szczegó³y danego pokoju.
-* `GET /api/rooms/available` – Poka¿ tylko pokoje o statusie "Available".
-* `POST /api/rooms` – Dodaj now¹ pozycjê pokoju w systemie.
-* `PUT /api/rooms/{id}` – Edytuj informacje o pokoju (np. zmiana statusu lub ceny).
-* `DELETE /api/rooms/{id}` – Zwiñ pokój z oferty agroturystyki.
+* `GET /api/rooms` â€“ Wylistuj wszystkie pokoje.
+* `GET /api/rooms/{id}` â€“ SzczegÃ³Å‚y danego pokoju.
+* `GET /api/rooms/available` â€“ PokaÅ¼ tylko pokoje o statusie "Available".
+* `POST /api/rooms` â€“ Dodaj nowÄ… pozycjÄ™ pokoju w systemie.
+* `PUT /api/rooms/{id}` â€“ Edytuj informacje o pokoju (np. zmiana statusu lub ceny).
+* `DELETE /api/rooms/{id}` â€“ ZwiÅ„ pokÃ³j z oferty agroturystyki.
 
 ### Typy Pokoi (`/api/roomtypes`)
-* `GET /api/roomtypes` – Pobierz strukturê (kategorie) pokoi.
-* `GET /api/roomtypes/{id}` – Informacje o konkretnym typie.
-* `POST /api/roomtypes` – Dodaj now¹ kategoriê pokoju.
-* `PUT /api/roomtypes/{id}` – Modyfikacja detali okreœlonej kategorii.
-* `DELETE /api/roomtypes/{id}` – Usuniêcie typu pokoju.
+* `GET /api/roomtypes` â€“ Pobierz strukturÄ™ (kategorie) pokoi.
+* `GET /api/roomtypes/{id}` â€“ Informacje o konkretnym typie.
+* `POST /api/roomtypes` â€“ Dodaj nowÄ… kategoriÄ™ pokoju.
+* `PUT /api/roomtypes/{id}` â€“ Modyfikacja detali okreÅ›lonej kategorii.
+* `DELETE /api/roomtypes/{id}` â€“ UsuniÄ™cie typu pokoju.
 
-### Us³ugi (`/api/services`)
-* `GET /api/services` – Zobacz bazê przewidywanych us³ug pobocznych.
-* `GET /api/services/{id}` – Odbierz pojedyncz¹ us³ugê.
-* `GET /api/services/available` – Wstêpnie wyselekcjonowana lista dostêpnych us³ug.
-* `POST /api/services` – Stworzenie us³ugi w ofercie.
-* `PUT /api/services/{id}` – Modyfikacja istniej¹cej us³ugi (np. podbicie ceny).
-* `DELETE /api/services/{id}` – Likwidacja zapisu o us³udze.
+### UsÅ‚ugi (`/api/services`)
+* `GET /api/services` â€“ Zobacz bazÄ™ przewidywanych usÅ‚ug pobocznych.
+* `GET /api/services/{id}` â€“ Odbierz pojedynczÄ… usÅ‚ugÄ™.
+* `GET /api/services/available` â€“ WstÄ™pnie wyselekcjonowana lista dostÄ™pnych usÅ‚ug.
+* `POST /api/services` â€“ Stworzenie usÅ‚ugi w ofercie.
+* `PUT /api/services/{id}` â€“ Modyfikacja istniejÄ…cej usÅ‚ugi (np. podbicie ceny).
+* `DELETE /api/services/{id}` â€“ Likwidacja zapisu o usÅ‚udze.
 
 ### Rezerwacje (`/api/reservations`)
-To unikalna architektura posiadaj¹ca tzw. sub-œcie¿ki operuj¹ce miêdzy relacjami.
-* `GET /api/reservations` – Zbierz i przedstaw wszystkie rezerwacje z do³¹czonymi szczegó³ami (wylistowani powi¹zani goœcie i dodane pokoje).
-* `GET /api/reservations/{id}` – Pojedyncza rezerwacja w detalu.
-* `GET /api/reservations/guest/{guestId}` – WyœledŸ wszystkie rezerwacje zrobione na wskazanego goœcia.
-* `POST /api/reservations` – W³aœciwe za³o¿enie rezerwacji (nag³ówek, daty, goœæ).
-* `PUT /api/reservations/{id}` – Edycja rezerwacji.
-* `DELETE /api/reservations/{id}` – Kasacja rezerwacji (w tle puszczany jest mechanizm zwalniaj¹cy zajmowane pokoje ze statusu 'Occupied' z powrotem na 'Available').
-* `POST /api/reservations/{reservationId}/rooms/{roomId}` – Dopnij dany pokój do zarejestrowanej ju¿ rezerwacji i dolicz koszty (akcja powi¹zana z dodaniem tabeli relacji).
-* `POST /api/reservations/{reservationId}/services/{serviceId}` – Realizacja zamówionej us³ugi w ramach op³acanej rezerwacji z automatu aktualizuj¹ca kwotê w rachunku ³¹cznym (TotalPrice).
+To unikalna architektura posiadajÄ…ca tzw. sub-Å›cieÅ¼ki operujÄ…ce miÄ™dzy relacjami.
+* `GET /api/reservations` â€“ Zbierz i przedstaw wszystkie rezerwacje z doÅ‚Ä…czonymi szczegÃ³Å‚ami (wylistowani powiÄ…zani goÅ›cie i dodane pokoje).
+* `GET /api/reservations/{id}` â€“ Pojedyncza rezerwacja w detalu.
+* `GET /api/reservations/guest/{guestId}` â€“ WyÅ›ledÅº wszystkie rezerwacje zrobione na wskazanego goÅ›cia.
+* `POST /api/reservations` â€“ WÅ‚aÅ›ciwe zaÅ‚oÅ¼enie rezerwacji (nagÅ‚Ã³wek, daty, goÅ›Ä‡).
+* `PUT /api/reservations/{id}` â€“ Edycja rezerwacji.
+* `DELETE /api/reservations/{id}` â€“ Kasacja rezerwacji (w tle puszczany jest mechanizm zwalniajÄ…cy zajmowane pokoje ze statusu 'Occupied' z powrotem na 'Available').
+* `POST /api/reservations/{reservationId}/rooms/{roomId}` â€“ Dopnij dany pokÃ³j do zarejestrowanej juÅ¼ rezerwacji i dolicz koszty (akcja powiÄ…zana z dodaniem tabeli relacji).
+* `POST /api/reservations/{reservationId}/services/{serviceId}` â€“ Realizacja zamÃ³wionej usÅ‚ugi w ramach opÅ‚acanej rezerwacji z automatu aktualizujÄ…ca kwotÄ™ w rachunku Å‚Ä…cznym (TotalPrice).
 
 ---
 
-## 4. Krótki opis ¿¹dania i odpowiedzi (Przyk³ady ze Swaggera)
+## 4. KrÃ³tki opis Å¼Ä…dania i odpowiedzi (PrzykÅ‚ady ze Swaggera)
 
-Poni¿ej przedstawiono dwie wybrane œcie¿ki prezentuj¹ce w jaki sposób proste jest modelowanie danych wzglêdem formatu JSON.
+PoniÅ¼ej przedstawiono dwie wybrane Å›cieÅ¼ki prezentujÄ…ce w jaki sposÃ³b proste jest modelowanie danych wzglÄ™dem formatu JSON.
 
-### Odczyt dostêpnych pokoi: `GET /api/rooms/available`
-- **Request (¯¹danie)**: Akcja jest bezparametrowa – zwyk³e odebranie po podaniu URLa. Wystarczy puste uderzenie endpointu. Brak koniecznoœci przesy³ania Body JSON.
-- **Response (OdpowiedŸ) [200 OK]**: Serwer wyci¹ga tylko te pokoje, które posiadaj¹ Status="Available" wraz z zaci¹gniêciem (Include) tabeli s³ownikowej, by pokazaæ o razu opis/wymiary (Standard) i nazwê z TypuPokoju. Lista JSON w formie surowca po¿¹danego na frontedzie.
+### Odczyt dostÄ™pnych pokoi: `GET /api/rooms/available`
+- **Request (Å»Ä…danie)**: Akcja jest bezparametrowa â€“ zwykÅ‚e odebranie po podaniu URLa. Wystarczy puste uderzenie endpointu. Brak koniecznoÅ›ci przesyÅ‚ania Body JSON.
+- **Response (OdpowiedÅº) [200 OK]**: Serwer wyciÄ…ga tylko te pokoje, ktÃ³re posiadajÄ… Status="Available" wraz z zaciÄ…gniÄ™ciem (Include) tabeli sÅ‚ownikowej, by pokazaÄ‡ o razu opis/wymiary (Standard) i nazwÄ™ z TypuPokoju. Lista JSON w formie surowca poÅ¼Ä…danego na frontedzie.
 
-### Za³o¿enie pokoju w systemie: `POST /api/rooms`
-- **Request (¯¹danie)**: Do endpointu wysy³any jest czysty model JSON opisuj¹cy konkretny pokój. Przyk³ad danych z Request Body:
+### ZaÅ‚oÅ¼enie pokoju w systemie: `POST /api/rooms`
+- **Request (Å»Ä…danie)**: Do endpointu wysyÅ‚any jest czysty model JSON opisujÄ…cy konkretny pokÃ³j. PrzykÅ‚ad danych z Request Body:
 ```json
 {
   "roomTypeID": 1,
@@ -85,16 +85,16 @@ Poni¿ej przedstawiono dwie wybrane œcie¿ki prezentuj¹ce w jaki sposób proste jes
   "status": "Available"
 }
 ```
-- **Response (OdpowiedŸ) [201 Created]**: System odbiera format, puszcza zapytanie INSERT do bazy za pomoc¹ powi¹zanego Entity Frameworka i nadaje nowy unikalny numer `roomID`. Odpowiedzi¹ jest ten sam rozbudowany JSON plus dodany automatycznie ID (co ostatecznie potwierdza pomyœlne przeprocessowanie).
+- **Response (OdpowiedÅº) [201 Created]**: System odbiera format, puszcza zapytanie INSERT do bazy za pomocÄ… powiÄ…zanego Entity Frameworka i nadaje nowy unikalny numer `roomID`. OdpowiedziÄ… jest ten sam rozbudowany JSON plus dodany automatycznie ID (co ostatecznie potwierdza pomyÅ›lne przeprocessowanie).
 
 ---
 
 ## 5. Dane testowe do prezentacji w interfejsie Swagger
 
-Podczas zajêæ mo¿na skorzystaæ z poni¿szych gotowych bloków w formacie JSON, wklejaj¹c je w Swaggerze (przycisk **"Try it out"**) na odpowiednich endpointach z metod¹ `POST`. Nale¿y tylko upewniæ siê, ¿e w polu ID zawsze widnieje `0` (serwer nada numery ID samodzielnie po trafieniu do bazy danych).
+Podczas zajÄ™Ä‡ moÅ¼na skorzystaÄ‡ z poniÅ¼szych gotowych blokÃ³w w formacie JSON, wklejajÄ…c je w Swaggerze (przycisk **"Try it out"**) na odpowiednich endpointach z metodÄ… `POST`. NaleÅ¼y tylko upewniÄ‡ siÄ™, Å¼e w polu ID zawsze widnieje `0` (serwer nada numery ID samodzielnie po trafieniu do bazy danych).
 
-### A. Dodawanie Goœcia (`POST /api/guests`)
-Endpoint s³u¿y do rejestracji fizycznej osoby w systemie.
+### A. Dodawanie GoÅ›cia (`POST /api/guests`)
+Endpoint sÅ‚uÅ¼y do rejestracji fizycznej osoby w systemie.
 ```json
 {
   "guestID": 0,
@@ -103,25 +103,25 @@ Endpoint s³u¿y do rejestracji fizycznej osoby w systemie.
   "email": "jan.kowalski@example.com",
   "phone": "500600700",
   "taxID": "PL1234567890",
-  "notes": "Goœæ poprosi³ o rezerwacjê telefonicznie."
+  "notes": "GoÅ›Ä‡ poprosiÅ‚ o rezerwacjÄ™ telefonicznie."
 }
 ```
 
 ### B. Dodawanie Kategorii Pokoju (`POST /api/roomtypes`)
-S³ownik wymuszaj¹cy zdefiniowanie "jakie w ogóle kwatery posiadamy".
+SÅ‚ownik wymuszajÄ…cy zdefiniowanie "jakie w ogÃ³le kwatery posiadamy".
 ```json
 {
   "roomTypeID": 0,
   "typeName": "Apartament z widokiem",
-  "description": "Du¿y pokój z bezpoœrednim wyjœciem na górskie szlaki.",
+  "description": "DuÅ¼y pokÃ³j z bezpoÅ›rednim wyjÅ›ciem na gÃ³rskie szlaki.",
   "standard": "Premium"
 }
 ```
 
 ### C. Dodawanie konkretnego Pokoju (`POST /api/rooms`)
-Tworzy fizyczny obiekt pokoju w ofercie. Nale¿y wpisaæ poprawne `roomTypeID` (jeœli w kroku wy¿ej podano Typ i serwer utworzy³ go z np. ID `1`, wpisz tutaj `1`).
+Tworzy fizyczny obiekt pokoju w ofercie. NaleÅ¼y wpisaÄ‡ poprawne `roomTypeID` (jeÅ›li w kroku wyÅ¼ej podano Typ i serwer utworzyÅ‚ go z np. ID `1`, wpisz tutaj `1`).
 
-**UWAGA w Swaggerze:** Endpoint ten przyjmuje **tylko jeden pokój naraz**. Kopiuj tylko pierwszy obiekt JSON, nie u¿ywaj ca³ych tablic.
+**UWAGA w Swaggerze:** Endpoint ten przyjmuje **tylko jeden pokÃ³j naraz**. Kopiuj tylko pierwszy obiekt JSON, nie uÅ¼ywaj caÅ‚ych tablic.
 ```json
 {
   "roomID": 0,
@@ -133,20 +133,20 @@ Tworzy fizyczny obiekt pokoju w ofercie. Nale¿y wpisaæ poprawne `roomTypeID` (je
 }
 ```
 
-### D. Dodawanie Us³ugi Pobocznej (`POST /api/services`)
-Definiuje to, co mo¿na w obiekcie dokupiæ dodatkowo do pobytu.
+### D. Dodawanie UsÅ‚ugi Pobocznej (`POST /api/services`)
+Definiuje to, co moÅ¼na w obiekcie dokupiÄ‡ dodatkowo do pobytu.
 ```json
 {
   "serviceID": 0,
-  "serviceName": "Wypo¿yczenie roweru",
-  "description": "Rower górski na 24h",
+  "serviceName": "WypoÅ¼yczenie roweru",
+  "description": "Rower gÃ³rski na 24h",
   "unitPrice": 45.00,
   "availability": "Available"
 }
 ```
 
-### E. Z³o¿enie kompletnej Rezerwacji (`POST /api/reservations`)
-Tworzy wpis o pobycie wraz z przypisanymi elementami. Wymagane jest wpisanie ID ju¿ istniej¹cego w bazie goœcia (`guestID`: 1), pokoju i ewentualnie us³ugi (które stworzone by³y w poprzednich krokach A-D).
+### E. ZÅ‚oÅ¼enie kompletnej Rezerwacji (`POST /api/reservations`)
+Tworzy wpis o pobycie wraz z przypisanymi elementami. Wymagane jest wpisanie ID juÅ¼ istniejÄ…cego w bazie goÅ›cia (`guestID`: 1), pokoju i ewentualnie usÅ‚ugi (ktÃ³re stworzone byÅ‚y w poprzednich krokach A-D).
 
 ```json
 {
@@ -161,11 +161,11 @@ Tworzy wpis o pobycie wraz z przypisanymi elementami. Wymagane jest wpisanie ID 
 }
 ```
 
-### F. Obs³uga ¿¹dañ GET, PUT i DELETE
-Powy¿sze przyk³ady skupiaj¹ siê na wprowadzaniu nowych danych (`POST`), co jest niezbêdne, aby wygenerowaæ pocz¹tkowe zasoby w pustej bazie. Po wype³nieniu systemu danymi wstêpnymi (kroki A-E), pozosta³e punkty dostêpowe mo¿na przetestowaæ w nastêpuj¹cy sposób:
+### F. ObsÅ‚uga Å¼Ä…daÅ„ GET, PUT i DELETE
+PowyÅ¼sze przykÅ‚ady skupiajÄ… siÄ™ na wprowadzaniu nowych danych (`POST`), co jest niezbÄ™dne, aby wygenerowaÄ‡ poczÄ…tkowe zasoby w pustej bazie. Po wypeÅ‚nieniu systemu danymi wstÄ™pnymi (kroki A-E), pozostaÅ‚e punkty dostÄ™powe moÅ¼na przetestowaÄ‡ w nastÄ™pujÄ…cy sposÃ³b:
 
-* **Odczyt zasobów (GET):** Endpoint obs³uguj¹cy zbiorcze pobieranie (np. `/api/guests`) nie wymaga wpisywania ¿adnych parametrów – zwraca od razu pe³n¹ listê. Aby odczytaæ obiekty pojedyncze (np. `/api/guests/{id}`), konieczne jest podanie nadanego wczeœniej w bazie numeru ID.
-* **Modyfikacja zasobów (PUT):** Do przetestowania edycji nale¿y wykorzystaæ œcie¿kê z parametrem wybranego ID (np. `/api/guests/{id}`) i przekazaæ w Body JSON odpowiednio zmodyfikowany model z nowymi wartoœciami (np. zmieniony numer telefonu).
-* **Usuwanie zasobów (DELETE):** ¯¹danie usuniêcia nie przyjmuje wartoœci w Body. Wymaga jedynie wskazania poprawnego numeru ID jako precyzyjnego celu do likwidacji (np. `/api/guests/{id}`).
+* **Odczyt zasobÃ³w (GET):** Endpoint obsÅ‚ugujÄ…cy zbiorcze pobieranie (np. `/api/guests`) nie wymaga wpisywania Å¼adnych parametrÃ³w â€“ zwraca od razu peÅ‚nÄ… listÄ™. Aby odczytaÄ‡ obiekty pojedyncze (np. `/api/guests/{id}`), konieczne jest podanie nadanego wczeÅ›niej w bazie numeru ID.
+* **Modyfikacja zasobÃ³w (PUT):** Do przetestowania edycji naleÅ¼y wykorzystaÄ‡ Å›cieÅ¼kÄ™ z parametrem wybranego ID (np. `/api/guests/{id}`) i przekazaÄ‡ w Body JSON odpowiednio zmodyfikowany model z nowymi wartoÅ›ciami (np. zmieniony numer telefonu).
+* **Usuwanie zasobÃ³w (DELETE):** Å»Ä…danie usuniÄ™cia nie przyjmuje wartoÅ›ci w Body. Wymaga jedynie wskazania poprawnego numeru ID jako precyzyjnego celu do likwidacji (np. `/api/guests/{id}`).
 
-Poprawne wykonanie kompletu powy¿szych operacji wyczerpuj¹co weryfikuje logikê i stabilnoœæ systemu od momentu zapisu nowego wiersza, po jego edycjê i ostateczne skasowanie.
+Poprawne wykonanie kompletu powyÅ¼szych operacji wyczerpujÄ…co weryfikuje logikÄ™ i stabilnoÅ›Ä‡ systemu od momentu zapisu nowego wiersza, po jego edycjÄ™ i ostateczne skasowanie.

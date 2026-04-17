@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-
+using TB_NowyFolder.Security;
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -34,17 +34,6 @@ public static class ServiceEndpoints
         .Produces<Service>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // GET available services
-        group.MapGet("/available", async (HotelDbContext db) =>
-        {
-            return await db.Services
-                .Where(s => s.Availability == "Available")
-                .ToListAsync();
-        })
-        
-        .WithName("GetAvailableServices")
-        .Produces<List<Service>>(StatusCodes.Status200OK);
-
         // POST create service
         group.MapPost("/", async (Service service, HotelDbContext db) =>
         {
@@ -52,6 +41,7 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/services/{service.ServiceID}", service);
         })
+        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("CreateService")
         .Produces<Service>(StatusCodes.Status201Created);
 
@@ -69,6 +59,7 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("UpdateService")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -83,8 +74,20 @@ public static class ServiceEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.ServiceManagement)
         .WithName("DeleteService")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
+
+        // GET available services
+        group.MapGet("/available", async (HotelDbContext db) =>
+        {
+            return await db.Services
+                .Where(s => s.Availability == "Available")
+                .ToListAsync();
+        })
+        
+        .WithName("GetAvailableServices")
+        .Produces<List<Service>>(StatusCodes.Status200OK);
     }
 }

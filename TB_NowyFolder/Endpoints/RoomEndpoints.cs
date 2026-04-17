@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-
+using TB_NowyFolder.Security;
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -37,18 +37,6 @@ public static class RoomEndpoints
         .Produces<Room>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // GET available rooms
-        group.MapGet("/available", async (HotelDbContext db) =>
-        {
-            return await db.Rooms
-                .Include(r => r.RoomType)
-                .Where(r => r.Status == "Available")
-                .ToListAsync();
-        })
-        
-        .WithName("GetAvailableRooms")
-        .Produces<List<Room>>(StatusCodes.Status200OK);
-
         // POST create room
         group.MapPost("/", async (Room room, HotelDbContext db) =>
         {
@@ -56,6 +44,7 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/rooms/{room.RoomID}", room);
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("CreateRoom")
         .Produces<Room>(StatusCodes.Status201Created);
 
@@ -74,6 +63,7 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("UpdateRoom")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
@@ -88,8 +78,21 @@ public static class RoomEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomManagement)
         .WithName("DeleteRoom")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
+
+        // GET available rooms
+        group.MapGet("/available", async (HotelDbContext db) =>
+        {
+            return await db.Rooms
+                .Include(r => r.RoomType)
+                .Where(r => r.Status == "Available")
+                .ToListAsync();
+        })
+        
+        .WithName("GetAvailableRooms")
+        .Produces<List<Room>>(StatusCodes.Status200OK);
     }
 }

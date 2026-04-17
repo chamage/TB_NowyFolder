@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
-
+using TB_NowyFolder.Security;
 
 namespace TB_NowyFolder.Endpoints;
 
@@ -41,27 +41,29 @@ public static class RoomTypeEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/roomtypes/{roomType.RoomTypeID}", roomType);
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("CreateRoomType")
         .Produces<RoomType>(StatusCodes.Status201Created);
 
-        // PUT update room type
-        group.MapPut("/{id}", async (int id, RoomType inputRoomType, HotelDbContext db) =>
+        // PUT update roomtype
+        group.MapPut("/{id}", async (int id, RoomType inputType, HotelDbContext db) =>
         {
             var roomType = await db.RoomTypes.FindAsync(id);
             if (roomType is null) return Results.NotFound();
 
-            roomType.TypeName = inputRoomType.TypeName;
-            roomType.Description = inputRoomType.Description;
-            roomType.Standard = inputRoomType.Standard;
+            roomType.TypeName = inputType.TypeName;
+            roomType.Description = inputType.Description;
+            roomType.Standard = inputType.Standard;
 
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("UpdateRoomType")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE room type
+        // DELETE roomtype
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
             var roomType = await db.RoomTypes.FindAsync(id);
@@ -71,6 +73,7 @@ public static class RoomTypeEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.RoomTypeManagement)
         .WithName("DeleteRoomType")
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
