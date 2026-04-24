@@ -1,7 +1,9 @@
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
+using TB_NowyFolder.Security;
 
 
 namespace TB_NowyFolder.Endpoints;
@@ -11,9 +13,10 @@ public static class ReservationEndpoints
     public static void MapReservationEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/reservations")
-            .WithTags("Reservations");
+            .WithTags("Reservations")
+            .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser);
 
-        // GET all reservations
+        // GET all reservations — Staff/Admin only
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.Reservations
@@ -25,7 +28,30 @@ public static class ReservationEndpoints
                     .ThenInclude(rs => rs.Service)
                 .ToListAsync();
         })
+        .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin)
         .WithName("GetAllReservations")
+        .Produces<List<Reservation>>(StatusCodes.Status200OK);
+
+        // GET /api/reservations/my — Client's own reservations
+        group.MapGet("/my", async (ClaimsPrincipal user, HotelDbContext db) =>
+        {
+            var guestIdClaim = user.FindFirst("guestId")?.Value;
+            if (string.IsNullOrEmpty(guestIdClaim) || !int.TryParse(guestIdClaim, out var guestId))
+                return Results.Forbid();
+
+            var reservations = await db.Reservations
+                .Include(r => r.Guest)
+                .Include(r => r.ReservationRooms)
+                    .ThenInclude(rr => rr.Room)
+                        .ThenInclude(room => room.RoomType)
+                .Include(r => r.ReservationServices)
+                    .ThenInclude(rs => rs.Service)
+                .Where(r => r.GuestID == guestId)
+                .ToListAsync();
+
+            return Results.Ok(reservations);
+        })
+        .WithName("GetMyReservations")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
         // GET reservation by ID
@@ -59,12 +85,21 @@ public static class ReservationEndpoints
                 .Where(r => r.GuestID == guestId)
                 .ToListAsync();
         })
+        .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin)
         .WithName("GetReservationsByGuest")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
         // POST create reservation
-        group.MapPost("/", async (Reservation reservation, HotelDbContext db) =>
+        group.MapPost("/", async (Reservation reservation, ClaimsPrincipal user, HotelDbContext db) =>
         {
+            // If client, force guestId from JWT claim
+            if (user.IsInRole(ApplicationRoles.Client))
+            {
+                var guestIdClaim = user.FindFirst("guestId")?.Value;
+                if (!string.IsNullOrEmpty(guestIdClaim) && int.TryParse(guestIdClaim, out var guestId))
+                    reservation.GuestID = guestId;
+            }
+
             db.Reservations.Add(reservation);
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservation.ReservationID}", reservation);

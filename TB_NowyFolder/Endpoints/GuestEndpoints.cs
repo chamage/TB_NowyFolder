@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
+using TB_NowyFolder.Security;
 
 
 namespace TB_NowyFolder.Endpoints;
@@ -10,7 +11,8 @@ public static class GuestEndpoints
     public static void MapGuestEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/guests")
-            .WithTags("Guests");
+            .WithTags("Guests")
+            .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin);
 
         // GET all guests
         group.MapGet("/", async (HotelDbContext db) =>
