@@ -40,6 +40,9 @@ builder.Services.AddAuthentication(options =>
 // RBAC Authorization Policies
 builder.Services.AddHotelAuthorizationPolicies();
 
+// Digital Signature Service
+builder.Services.AddSingleton<DigitalSignatureService>();
+
 // Add API Explorer and Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -129,5 +132,6 @@ app.MapRoomTypeEndpoints();
 app.MapRoomEndpoints();
 app.MapServiceEndpoints();
 app.MapReservationEndpoints();
+app.MapDocumentEndpoints();
 
 app.Run();
