@@ -16,6 +16,7 @@ public class HotelDbContext : DbContext
     public DbSet<Service> Services { get; set; }
     public DbSet<ReservationRoom> ReservationRooms { get; set; }
     public DbSet<ReservationService> ReservationServices { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,6 +28,11 @@ public class HotelDbContext : DbContext
 
         modelBuilder.Entity<ReservationService>()
             .HasKey(rs => new { rs.ReservationID, rs.ServiceID, rs.ServiceDate });
+
+        // Configure User unique index
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
 
         // Seed some initial data
         modelBuilder.Entity<RoomType>().HasData(
@@ -53,6 +59,12 @@ public class HotelDbContext : DbContext
         modelBuilder.Entity<Guest>().HasData(
             new Guest { GuestID = 1, FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", Phone = "123-456-7890" },
             new Guest { GuestID = 2, FirstName = "Jane", LastName = "Smith", Email = "jane.smith@example.com", Phone = "098-765-4321" }
+        );
+
+        modelBuilder.Entity<User>().HasData(
+            new User { UserID = 1, Username = "admin", PasswordHash = "AQAAAAIAAYagAAAAEDIxCxLk7cO67wzbcIxZEhSNWwO3N7OB3apVA/gpSSaDEx9E2cO0kFL8kaMZmlw3qA==", Role = Security.ApplicationRoles.Administrator },
+            new User { UserID = 2, Username = "reception", PasswordHash = "AQAAAAIAAYagAAAAEML12Nj+jhhywZ/TBEuyFOCAoQWcbiIiZXnp8fkBYkYBdViiElzI/uHC6vI3OqpAHA==", Role = Security.ApplicationRoles.Receptionist },
+            new User { UserID = 3, Username = "client", PasswordHash = "AQAAAAIAAYagAAAAEIXuk4hfcIORPrlAC3EANB5kTeEiXf/QpfoTuRSCfUVNFqzvGgXCYsc8gzDjMyKiPg==", Role = Security.ApplicationRoles.Client, GuestID = 1 }
         );
     }
 }

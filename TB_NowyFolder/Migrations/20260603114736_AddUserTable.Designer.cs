@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TB_NowyFolder.Data;
 
@@ -11,9 +12,11 @@ using TB_NowyFolder.Data;
 namespace TB_NowyFolder.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603114736_AddUserTable")]
+    partial class AddUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +62,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasKey("GuestID");
 
-                    b.ToTable("Guests", (string)null);
+                    b.ToTable("Guests");
 
                     b.HasData(
                         new
@@ -115,7 +118,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasIndex("GuestID");
 
-                    b.ToTable("Reservations", (string)null);
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("TB_NowyFolder.Models.ReservationRoom", b =>
@@ -135,7 +138,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasIndex("RoomID");
 
-                    b.ToTable("ReservationRooms", (string)null);
+                    b.ToTable("ReservationRooms");
                 });
 
             modelBuilder.Entity("TB_NowyFolder.Models.ReservationService", b =>
@@ -158,7 +161,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasIndex("ServiceID");
 
-                    b.ToTable("ReservationServices", (string)null);
+                    b.ToTable("ReservationServices");
                 });
 
             modelBuilder.Entity("TB_NowyFolder.Models.Room", b =>
@@ -192,7 +195,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasIndex("RoomTypeID");
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms");
 
                     b.HasData(
                         new
@@ -265,7 +268,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasKey("RoomTypeID");
 
-                    b.ToTable("RoomTypes", (string)null);
+                    b.ToTable("RoomTypes");
 
                     b.HasData(
                         new
@@ -318,7 +321,7 @@ namespace TB_NowyFolder.Migrations
 
                     b.HasKey("ServiceID");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
 
                     b.HasData(
                         new
@@ -387,7 +390,7 @@ namespace TB_NowyFolder.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new

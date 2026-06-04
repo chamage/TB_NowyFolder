@@ -4,7 +4,13 @@ let guests = [], rooms = [], services = [], reservations = [];
 let authToken = localStorage.getItem('authToken') || '';
 let currentUser = JSON.parse(localStorage.getItem('authUser') || 'null');
 
-$(document).ready(function () { updateAuthUI(); applyRbacToUi(); switchTab('rooms'); });
+$(document).ready(function () { 
+    updateAuthUI(); 
+    applyRbacToUi(); 
+    const isStaff = hasRole('Receptionist') || hasRole('Administrator');
+    switchTab(isStaff ? 'dashboard' : 'rooms'); 
+    loadWeather();
+});
 
 // ── Toast ──
 function showToast(msg, type = 'info') {
@@ -44,7 +50,9 @@ function login() {
             localStorage.setItem('authUser', JSON.stringify(currentUser));
             $('#auth-password').val('');
             showToast('Signed in as ' + currentUser.username, 'success');
-            updateAuthUI(); applyRbacToUi(); switchTab('rooms');
+            updateAuthUI(); applyRbacToUi(); 
+            const isStaff = hasRole('Receptionist') || hasRole('Administrator');
+            switchTab(isStaff ? 'dashboard' : 'rooms');
         },
         error() { showToast('Invalid credentials.', 'error'); }
     });
@@ -54,18 +62,78 @@ function logout() {
     authToken=''; currentUser=null;
     localStorage.removeItem('authToken'); localStorage.removeItem('authUser');
     showToast('Signed out.', 'info');
+    showLoginPanel();
     updateAuthUI(); applyRbacToUi(); switchTab('rooms');
+}
+
+function register() {
+    const u = $('#reg-username').val().trim();
+    const p = $('#reg-password').val().trim();
+    const fn = $('#reg-firstname').val().trim();
+    const ln = $('#reg-lastname').val().trim();
+    const em = $('#reg-email').val().trim();
+    const ph = $('#reg-phone').val().trim();
+
+    if (!u || !p || !fn || !ln || !em) {
+        showToast('Please fill all required fields.', 'warning');
+        return;
+    }
+
+    $.ajax({
+        url: apiBaseUrl + '/auth/register',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            username: u,
+            password: p,
+            firstName: fn,
+            lastName: ln,
+            email: em,
+            phone: ph || null
+        }),
+        success(r) {
+            showToast('Registration successful! Please sign in.', 'success');
+            $('#reg-username').val('');
+            $('#reg-password').val('');
+            $('#reg-firstname').val('');
+            $('#reg-lastname').val('');
+            $('#reg-email').val('');
+            $('#reg-phone').val('');
+            showLoginPanel();
+            $('#auth-username').val(u);
+            $('#auth-password').focus();
+        },
+        error(xhr) {
+            const errorMsg = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Registration failed.';
+            showToast(errorMsg, 'error');
+        }
+    });
+}
+
+function showRegisterPanel(e) {
+    if (e) e.preventDefault();
+    $('#auth-logged-out-panel').addClass('d-none');
+    $('#auth-register-panel').removeClass('d-none');
+}
+
+function showLoginPanel(e) {
+    if (e) e.preventDefault();
+    $('#auth-register-panel').addClass('d-none');
+    $('#auth-logged-out-panel').removeClass('d-none');
 }
 
 function updateAuthUI() {
     if (isAuthenticated() && currentUser) {
         $('#auth-logged-out-panel').addClass('d-none');
+        $('#auth-register-panel').addClass('d-none');
         $('#auth-logged-in-panel').removeClass('d-none');
         $('#auth-username-display').text(currentUser.username);
         $('#auth-role-display').text(currentUser.role);
     } else {
-        $('#auth-logged-out-panel').removeClass('d-none');
         $('#auth-logged-in-panel').addClass('d-none');
+        if ($('#auth-register-panel').hasClass('d-none')) {
+            $('#auth-logged-out-panel').removeClass('d-none');
+        }
     }
 }
 
@@ -78,23 +146,90 @@ function handleApiError(xhr, msg) {
 }
 
 function applyRbacToUi() {
+    const isStaff = hasRole('Receptionist') || hasRole('Administrator');
+    const nav = $('#nav-tabs-list');
+    nav.empty();
+    
+    if (isStaff) {
+        nav.append('<button id="tab-dashboard" class="nav-tab-btn" onclick="switchTab(\'dashboard\')">Overview</button>');
+        nav.append('<button id="tab-reservations" class="nav-tab-btn" onclick="switchTab(\'reservations\')">Bookings</button>');
+        nav.append('<button id="tab-rooms" class="nav-tab-btn" onclick="switchTab(\'rooms\')">Rooms Catalog</button>');
+        nav.append('<button id="tab-services" class="nav-tab-btn" onclick="switchTab(\'services\')">Services Catalog</button>');
+        nav.append('<button id="tab-guests" class="nav-tab-btn" onclick="switchTab(\'guests\')">Guests Directory</button>');
+    } else {
+        nav.append('<button id="tab-rooms" class="nav-tab-btn active" onclick="switchTab(\'rooms\')">Rooms & Suites</button>');
+        nav.append('<button id="tab-services" class="nav-tab-btn" onclick="switchTab(\'services\')">Services & Amenities</button>');
+        if (isAuthenticated()) {
+            nav.append('<button id="tab-reservations" class="nav-tab-btn" onclick="switchTab(\'reservations\')">My Bookings</button>');
+        }
+    }
+
     $('#btn-add-guest').toggle(canManageGuests());
     $('#btn-add-room').toggle(canManageCatalogWrite());
     $('#btn-add-service').toggle(canManageCatalogWrite());
     $('#btn-add-reservation').toggle(canModifyReservations());
-    $('#tab-guests').toggle(canManageGuests());
-    $('#tab-reservations').toggle(canReadReservations());
 }
 
 // ── Navigation ──
 function switchTab(name) {
     if (name==='guests' && !canManageGuests()) { showToast('Requires Receptionist or Admin role.','warning'); return; }
     if (name==='reservations' && !canReadReservations()) { showToast('Requires sign-in.','warning'); return; }
-    $('.sidebar-nav button').removeClass('active');
+    if (name==='dashboard' && !(hasRole('Receptionist') || hasRole('Administrator'))) { showToast('Access denied.','warning'); return; }
+    
+    $('.nav-tab-btn').removeClass('active');
     $('#tab-'+name).addClass('active');
     $('.content-section').addClass('d-none');
     $('#section-'+name).removeClass('d-none');
-    ({guests:loadGuests, rooms:loadRooms, services:loadServices, reservations:loadReservations})[name]();
+    
+    ({
+        dashboard: loadDashboardData,
+        guests: loadGuests, 
+        rooms: loadRooms, 
+        services: loadServices, 
+        reservations: loadReservations
+    })[name]();
+}
+
+// ── Dashboard Data ──
+function loadDashboardData() {
+    $.when(
+        $.ajax({ url: apiBaseUrl + '/rooms', headers: authHeaders() }),
+        $.ajax({ url: apiBaseUrl + '/guests', headers: authHeaders() }),
+        $.ajax({ url: apiBaseUrl + '/reservations', headers: authHeaders() })
+    ).done(function(roomsRes, guestsRes, reservationsRes) {
+        rooms = roomsRes[0];
+        guests = guestsRes[0];
+        reservations = reservationsRes[0];
+        
+        const totalRooms = rooms.length;
+        const occupiedRooms = rooms.filter(r => r.status === 'Occupied').length;
+        const occupancyRate = totalRooms > 0 ? Math.round((occupiedRooms / totalRooms) * 100) : 0;
+        const totalGuests = guests.length;
+        const totalBookings = reservations.length;
+        const totalRevenue = reservations.reduce((sum, r) => sum + r.totalPrice, 0);
+        
+        $('#stats-occupancy').text(occupancyRate + '%');
+        $('#stats-occupancy-detail').text(`${occupiedRooms} of ${totalRooms} rooms filled`);
+        $('#stats-bookings').text(totalBookings);
+        $('#stats-guests').text(totalGuests);
+        $('#stats-revenue').text(fmt$(totalRevenue));
+        $('#stats-access-role').text(currentUser ? currentUser.role : 'Staff Only');
+        
+        let h = '<table class="table small"><thead><tr><th>ID</th><th>Guest</th><th>Status</th><th>Total</th></tr></thead><tbody>';
+        if (!reservations.length) {
+            h += '<tr><td colspan="4" class="text-center text-muted">No reservations</td></tr>';
+        } else {
+            const sorted = [...reservations].sort((a,b) => b.reservationID - a.reservationID).slice(0, 5);
+            sorted.forEach(r => {
+                const gn = r.guest ? r.guest.firstName + ' ' + r.guest.lastName : '—';
+                h += `<tr><td>#${r.reservationID}</td><td>${gn}</td><td>${badge(r.reservationStatus)}</td><td>${fmt$(r.totalPrice)}</td></tr>`;
+            });
+        }
+        h += '</tbody></table>';
+        $('#dashboard-recent-bookings').html(h);
+    }).fail(function(xhr) {
+        handleApiError(xhr, 'Failed to load dashboard statistics.');
+    });
 }
 
 // ── Formatters ──
@@ -137,16 +272,56 @@ function loadRooms(avail){
     $.ajax({url:apiBaseUrl+'/rooms'+(avail?'/available':''),headers:authHeaders(),
         success(data){
             rooms=data;
-            let h='<table class="table"><thead><tr><th>No.</th><th>Type</th><th>Capacity</th><th>Price/Night</th><th>Status</th></tr></thead><tbody>';
-            if(!data.length) h+='<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No rooms found</td></tr>';
-            else data.forEach(r=>{h+=`<tr class="clickable-row" onclick="showRoomDetails(${r.roomID})"><td><strong>${r.roomNumber}</strong></td><td>${r.roomType?r.roomType.typeName:'—'}</td><td>${r.capacity}</td><td>${fmt$(r.pricePerNight)}</td><td>${badge(r.status)}</td></tr>`;});
-            h+='</tbody></table>'; $('#rooms-list').html(h);
+            let h='';
+            if(!data.length) h='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem 0">No rooms found</div>';
+            else data.forEach(r=>{
+                const typeName = r.roomType ? r.roomType.typeName : 'Standard';
+                let imgName = 'room_single.png';
+                if (typeName === 'Double') imgName = 'room_double.png';
+                if (typeName === 'Suite') imgName = 'room_suite.png';
+                const imgPath = `/images/${imgName}`;
+
+                h+=`
+                <div class="hotel-visual-card" onclick="showRoomDetails(${r.roomID})">
+                    <div class="card-img-container">
+                        <img src="${imgPath}" alt="Room ${r.roomNumber}">
+                        <div class="card-badge-overlay">${badge(r.status)}</div>
+                        <div class="card-price-overlay">${fmt$(r.pricePerNight)}<span>/ night</span></div>
+                    </div>
+                    <div class="visual-card-body">
+                        <h4>Room ${r.roomNumber}</h4>
+                        <p>${r.roomType ? r.roomType.description : 'A beautiful luxury hotel room.'}</p>
+                        <div class="card-meta-row">
+                            <div class="card-meta-item">Type: <strong>${typeName}</strong></div>
+                            <div class="card-meta-item">Guests: <strong>${r.capacity}</strong></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            $('#rooms-list').html(h);
         },error(xhr){handleApiError(xhr,'Failed to load rooms.');}
     });
 }
 function showRoomDetails(id){
     const r=rooms.find(x=>x.roomID===id);if(!r)return;
-    $('#roomDetailsContent').html(`<h4 style="font-family:var(--serif);margin-bottom:.5rem">Room ${r.roomNumber}</h4>${badge(r.status)}<hr style="border-color:var(--border-light);margin:1rem 0"><p style="margin:0;line-height:2"><strong style="color:var(--text-muted)">Type</strong>&ensp;${r.roomType?r.roomType.typeName:'—'}<br><strong style="color:var(--text-muted)">Standard</strong>&ensp;${r.roomType?r.roomType.standard:'—'}<br><strong style="color:var(--text-muted)">Capacity</strong>&ensp;${r.capacity} guests<br><strong style="color:var(--text-muted)">Rate</strong>&ensp;${fmt$(r.pricePerNight)} / night</p>${r.roomType&&r.roomType.description?'<p style="color:var(--text-muted);font-size:.85rem;margin-top:.75rem">'+r.roomType.description+'</p>':''}`);
+    const isAvail = r.status === 'Available';
+    const bookBtn = isAvail && canModifyReservations() 
+        ? `<button class="btn-gold w-100 mt-3" onclick="bootstrap.Modal.getInstance('#roomDetailsModal').hide(); showAddReservationModal(${r.roomID})">Book This Room</button>`
+        : '';
+        
+    $('#roomDetailsContent').html(`
+        <h4 style="font-family:var(--serif);margin-bottom:.5rem">Room ${r.roomNumber}</h4>
+        ${badge(r.status)}
+        <hr style="border-color:var(--border-light);margin:1rem 0">
+        <p style="margin:0;line-height:2">
+            <strong style="color:var(--text-muted)">Type</strong>&ensp;${r.roomType?r.roomType.typeName:'—'}<br>
+            <strong style="color:var(--text-muted)">Standard</strong>&ensp;${r.roomType?r.roomType.standard:'—'}<br>
+            <strong style="color:var(--text-muted)">Capacity</strong>&ensp;${r.capacity} guests<br>
+            <strong style="color:var(--text-muted)">Rate</strong>&ensp;${fmt$(r.pricePerNight)} / night
+        </p>
+        ${r.roomType&&r.roomType.description?'<p style="color:var(--text-muted);font-size:.85rem;margin-top:.75rem">'+r.roomType.description+'</p>':''}
+        ${bookBtn}
+    `);
     new bootstrap.Modal('#roomDetailsModal').show();
 }
 function showAddRoomModal(){
@@ -167,10 +342,30 @@ function loadServices(){
     $.ajax({url:apiBaseUrl+'/services',headers:authHeaders(),
         success(data){
             services=data;
-            let h='<table class="table"><thead><tr><th>Name</th><th>Description</th><th>Price</th><th>Status</th></tr></thead><tbody>';
-            if(!data.length)h+='<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">No services</td></tr>';
-            else data.forEach(s=>{h+=`<tr class="clickable-row" onclick="showServiceDetails(${s.serviceID})"><td><strong>${s.serviceName}</strong></td><td>${s.description||'—'}</td><td>${fmt$(s.unitPrice)}</td><td>${badge(s.availability)}</td></tr>`;});
-            h+='</tbody></table>';$('#services-list').html(h);
+            let h='';
+            if(!data.length) h='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:3rem 0">No services found</div>';
+            else data.forEach(s=>{
+                const name = s.serviceName || '';
+                let imgName = 'service_spa.png';
+                if (name.includes('Breakfast') || name.includes('Room Service') || name.includes('Dining')) {
+                    imgName = 'service_dining.png';
+                }
+                const imgPath = `/images/${imgName}`;
+
+                h+=`
+                <div class="hotel-visual-card" onclick="showServiceDetails(${s.serviceID})">
+                    <div class="card-img-container">
+                        <img src="${imgPath}" alt="${name}">
+                        <div class="card-badge-overlay">${badge(s.availability)}</div>
+                        <div class="card-price-overlay">${fmt$(s.unitPrice)}<span>/ unit</span></div>
+                    </div>
+                    <div class="visual-card-body">
+                        <h4>${name}</h4>
+                        <p>${s.description || 'Exclusive service offering at Grand Hotel.'}</p>
+                    </div>
+                </div>`;
+            });
+            $('#services-list').html(h);
         },error(xhr){handleApiError(xhr);}
     });
 }
@@ -232,25 +427,85 @@ function updateGuestSelect(){
     guests.forEach(g=>s.append(`<option value="${g.guestID}">${g.firstName} ${g.lastName}</option>`));
 }
 
-function showAddReservationModal(){
+function showAddReservationModal(preselectedRoomId){
     if(!canModifyReservations()){showToast('No permission.','error');return;}
     const s=$('#reservationGuestSelect');s.empty();
+    const sr=$('#reservationRoomSelect');sr.empty().append('<option value="">Loading rooms…</option>');
+    $('#addReservationForm')[0].reset();
+    
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    $('#addReservationForm input[name="checkInDate"]').val(today.toISOString().split('T')[0]);
+    $('#addReservationForm input[name="checkOutDate"]').val(tomorrow.toISOString().split('T')[0]);
+
+    $.ajax({
+        url: apiBaseUrl + '/rooms/available',
+        headers: authHeaders(),
+        success(availableRooms) {
+            sr.empty().append('<option value="">Select a room…</option>');
+            availableRooms.forEach(r => {
+                const selectedAttr = (preselectedRoomId && r.roomID === preselectedRoomId) ? 'selected' : '';
+                sr.append(`<option value="${r.roomID}" ${selectedAttr}>Room ${r.roomNumber} — ${r.roomType ? r.roomType.typeName : 'Standard'} (${fmt$(r.pricePerNight)}/night)</option>`);
+            });
+            if (preselectedRoomId && !availableRooms.find(r => r.roomID === preselectedRoomId)) {
+                const room = rooms.find(r => r.roomID === preselectedRoomId);
+                if (room) {
+                    sr.append(`<option value="${room.roomID}" selected>Room ${room.roomNumber} — ${room.roomType ? room.roomType.typeName : 'Standard'} (${fmt$(room.pricePerNight)}/night) [Currently ${room.status}]</option>`);
+                }
+            }
+        },
+        error(xhr) {
+            handleApiError(xhr, 'Could not load available rooms.');
+        }
+    });
+
     if(hasRole('Client')){
         if(!currentUser||!currentUser.guestId){showToast('Missing guest ID.','error');return;}
         s.append(`<option value="${currentUser.guestId}" selected>${currentUser.username}</option>`);s.prop('disabled',true);
-    } else{s.prop('disabled',false);if(!guests.length&&canManageGuests())loadGuests();}
-    $('#addReservationForm')[0].reset();
-    if(hasRole('Client')){s.empty().append(`<option value="${currentUser.guestId}" selected>${currentUser.username}</option>`);s.prop('disabled',true);}
-    new bootstrap.Modal('#addReservationModal').show();
+        new bootstrap.Modal('#addReservationModal').show();
+    } else {
+        s.prop('disabled',false);
+        $.ajax({
+            url: apiBaseUrl + '/guests',
+            headers: authHeaders(),
+            success(data) {
+                guests = data;
+                updateGuestSelect();
+                new bootstrap.Modal('#addReservationModal').show();
+            },
+            error(xhr) {
+                handleApiError(xhr, 'Could not load guest list.');
+            }
+        });
+    }
 }
 
 function createReservation(){
     let gid=$('#reservationGuestSelect').val();
     if(hasRole('Client'))gid=currentUser&&currentUser.guestId?currentUser.guestId:null;
     if(!gid){showToast('Select a guest.','warning');return;}
-    const d={guestID:parseInt(gid),checkInDate:$('#addReservationForm input[name="checkInDate"]').val(),checkOutDate:$('#addReservationForm input[name="checkOutDate"]').val(),numberOfGuests:parseInt($('#addReservationForm input[name="numberOfGuests"]').val()),totalPrice:0,reservationStatus:'Confirmed'};
+    
+    const roomId = $('#reservationRoomSelect').val();
+    if(!roomId){showToast('Select a room.','warning');return;}
+    
+    const d={
+        guestID:parseInt(gid),
+        checkInDate:$('#addReservationForm input[name="checkInDate"]').val(),
+        checkOutDate:$('#addReservationForm input[name="checkOutDate"]').val(),
+        numberOfGuests:parseInt($('#addReservationForm input[name="numberOfGuests"]').val()),
+        totalPrice:0,
+        reservationStatus:'Confirmed',
+        reservationRooms: [{ roomID: parseInt(roomId) }]
+    };
+    
     $.ajax({url:apiBaseUrl+'/reservations',type:'POST',headers:authHeaders(),contentType:'application/json',data:JSON.stringify(d),
-        success(r){bootstrap.Modal.getInstance('#addReservationModal').hide();if(canReadReservations())loadReservations();showToast('Booking #'+r.reservationID+' created.','success');},
+        success(r){
+            bootstrap.Modal.getInstance('#addReservationModal').hide();
+            if(canReadReservations())loadReservations();
+            loadRooms();
+            showToast('Booking #'+r.reservationID+' created.','success');
+        },
         error(xhr){handleApiError(xhr);}
     });
 }
@@ -286,5 +541,61 @@ function submitAddService(){
     $.ajax({url:`${apiBaseUrl}/reservations/${rid}/services/${sid}`,type:'POST',headers:authHeaders(),contentType:'application/json',data:JSON.stringify({quantity:parseInt(qty),serviceDate:dt}),
         success(){bootstrap.Modal.getInstance('#addServiceToReservationModal').hide();loadReservations();showToast('Service added.','success');},
         error(xhr){handleApiError(xhr);}
+    });
+}
+
+// ── Weather Widget ──
+function loadWeather() {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=49.6886&longitude=21.7643&current_weather=true';
+    $.ajax({
+        url: url,
+        type: 'GET',
+        success: function (data) {
+            if (data && data.current_weather) {
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
+                
+                const weatherMap = {
+                    0: { desc: 'Sunny', emoji: '☀️' },
+                    1: { desc: 'Mainly Clear', emoji: '🌤️' },
+                    2: { desc: 'Partly Cloudy', emoji: '⛅' },
+                    3: { desc: 'Overcast', emoji: '☁️' },
+                    45: { desc: 'Foggy', emoji: '🌫️' },
+                    48: { desc: 'Foggy', emoji: '🌫️' },
+                    51: { desc: 'Drizzle', emoji: '🌧️' },
+                    53: { desc: 'Drizzle', emoji: '🌧️' },
+                    55: { desc: 'Drizzle', emoji: '🌧️' },
+                    56: { desc: 'Freezing Drizzle', emoji: '❄️' },
+                    57: { desc: 'Freezing Drizzle', emoji: '❄️' },
+                    61: { desc: 'Light Rain', emoji: '🌧️' },
+                    63: { desc: 'Rain', emoji: '🌧️' },
+                    65: { desc: 'Heavy Rain', emoji: '🌧️' },
+                    66: { desc: 'Freezing Rain', emoji: '❄️' },
+                    67: { desc: 'Freezing Rain', emoji: '❄️' },
+                    71: { desc: 'Snowfall', emoji: '❄️' },
+                    73: { desc: 'Snowfall', emoji: '❄️' },
+                    75: { desc: 'Heavy Snowfall', emoji: '❄️' },
+                    77: { desc: 'Snow Grains', emoji: '❄️' },
+                    80: { desc: 'Showers', emoji: '🌦️' },
+                    81: { desc: 'Showers', emoji: '🌦️' },
+                    82: { desc: 'Violent Showers', emoji: '🌦️' },
+                    85: { desc: 'Snow Showers', emoji: '🌨️' },
+                    86: { desc: 'Snow Showers', emoji: '🌨️' },
+                    95: { desc: 'Thunderstorm', emoji: '⛈️' },
+                    96: { desc: 'Thunderstorm', emoji: '⛈️' },
+                    99: { desc: 'Thunderstorm', emoji: '⛈️' }
+                };
+
+                const weather = weatherMap[code] || { desc: 'Clear', emoji: '☀️' };
+                
+                $('#weather-icon').text(weather.emoji);
+                $('#weather-temp').text(temp + '°C');
+                $('#weather-desc').text(weather.desc + ' · Krosno');
+                $('#weather-widget').removeClass('d-none');
+            }
+        },
+        error: function () {
+            console.warn('Weather API failed to load.');
+        }
     });
 }

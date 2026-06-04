@@ -100,6 +100,25 @@ public static class ReservationEndpoints
                     reservation.GuestID = guestId;
             }
 
+            // Calculate price and occupy rooms if specified on creation
+            if (reservation.ReservationRooms != null && reservation.ReservationRooms.Any())
+            {
+                int nights = reservation.CheckOutDate.DayNumber - reservation.CheckInDate.DayNumber;
+                if (nights < 1) nights = 1;
+
+                reservation.TotalPrice = 0;
+                foreach (var rr in reservation.ReservationRooms)
+                {
+                    var room = await db.Rooms.FindAsync(rr.RoomID);
+                    if (room != null)
+                    {
+                        rr.PricePerNight = room.PricePerNight;
+                        reservation.TotalPrice += room.PricePerNight * nights;
+                        room.Status = "Occupied";
+                    }
+                }
+            }
+
             db.Reservations.Add(reservation);
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservation.ReservationID}", reservation);

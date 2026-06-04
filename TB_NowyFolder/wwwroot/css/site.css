@@ -361,3 +361,337 @@ body{
     .section-hdr{flex-direction:column;gap:.6rem;align-items:flex-start}
     .table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch}
 }
+
+/* ═══════════════════════════════════════════════════════
+   PREMIUM LUXURY PORTAL ADDITIONS
+   ═══════════════════════════════════════════════════════ */
+
+/* Luxury Hero Section */
+.hotel-hero {
+    position: relative;
+    width: 100%;
+    height: 520px;
+    background: url('/images/hotel_hero.png') no-repeat center center;
+    background-size: cover;
+    border-radius: var(--radius);
+    margin-bottom: 2.5rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+}
+
+.hotel-hero-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, rgba(26,26,26,0.3) 0%, rgba(26,26,26,0.75) 100%);
+    z-index: 1;
+}
+
+.hotel-hero-content {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+    max-width: 650px;
+}
+
+.hotel-hero-content h1 {
+    font-family: var(--serif);
+    font-size: 3.2rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.hotel-hero-content h1 em {
+    font-style: normal;
+    color: var(--gold-light);
+}
+
+.hotel-hero-content p {
+    font-size: 1.1rem;
+    font-weight: 300;
+    margin-bottom: 2rem;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 5px rgba(0,0,0,0.3);
+}
+
+.btn-luxury-lg {
+    background: var(--gold);
+    color: #ffffff;
+    border: 1px solid var(--gold-light);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 0.9rem 2.2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(184,149,106,0.4);
+    text-decoration: none;
+}
+
+.btn-luxury-lg:hover {
+    background: var(--gold-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(184,149,106,0.5);
+    color: #ffffff;
+}
+
+/* Glassmorphic Auth Card */
+.glass-auth-card {
+    background: rgba(255, 255, 255, 0.82) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: var(--shadow-lg) !important;
+}
+
+/* Section Subtitle */
+.section-subtitle {
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1rem;
+    font-weight: 300;
+    max-width: 550px;
+    margin: -0.5rem auto 2.5rem;
+}
+
+/* Rooms & Services Visual Card Grids */
+.room-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.service-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+/* Visual Card Container */
+.hotel-visual-card {
+    background: var(--bg-white);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    height: 100%;
+}
+
+.hotel-visual-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow);
+    border-color: var(--border);
+}
+
+.card-img-container {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    background: #e8e4df;
+}
+
+.card-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.hotel-visual-card:hover .card-img-container img {
+    transform: scale(1.05);
+}
+
+/* Card Overlays */
+.card-badge-overlay {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+}
+
+.card-price-overlay {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(26, 26, 26, 0.85);
+    backdrop-filter: blur(4px);
+    color: var(--gold-light);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-price-overlay span {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+/* Card Content Body */
+.visual-card-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.visual-card-body h4 {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 0 0 0.5rem;
+}
+
+.visual-card-body p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0 0 1rem;
+    flex-grow: 1;
+}
+
+.card-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-light);
+    padding-top: 0.85rem;
+    margin-top: auto;
+}
+
+.card-meta-item {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.card-meta-item strong {
+    color: var(--text-light);
+}
+
+/* Navigation bar redesign */
+.nav-tab-container {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.nav-tab-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.nav-tab-btn:hover {
+    border-color: var(--gold-light);
+    color: var(--gold-dark);
+    background: rgba(184,149,106,0.04);
+}
+
+.nav-tab-btn.active {
+    background: var(--gold);
+    color: #ffffff;
+    border-color: var(--gold);
+    box-shadow: 0 3px 10px rgba(184,149,106,0.25);
+    font-weight: 600;
+}
+
+.auth-toggle-link:hover {
+    color: var(--gold-dark) !important;
+    text-decoration: underline !important;
+}
+
+/* Floating Glassmorphic Weather Widget */
+.weather-widget-glass {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 50px;
+    padding: 0.45rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: #ffffff;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: var(--transition);
+}
+
+.weather-widget-glass:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.weather-widget-glass .weather-icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.weather-widget-glass .weather-temp {
+    font-weight: 600;
+    color: var(--gold-light);
+}
+
+.weather-widget-glass .weather-desc {
+    opacity: 0.9;
+    font-size: 0.76rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    padding-left: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+@media(max-width: 576px) {
+    .weather-widget-glass {
+        top: 12px;
+        right: 12px;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.75rem;
+    }
+    .weather-widget-glass .weather-desc {
+        display: none;
+    }
+}

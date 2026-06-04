@@ -1,25 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using TB_NowyFolder.Data;
+using TB_NowyFolder.Models;
 using TB_NowyFolder.Security;
 
 namespace TB_NowyFolder.Endpoints;
 
 public static class AuthEndpoints
 {
-    /// <summary>
-    /// Demo user accounts for presentation purposes.
-    /// In production, these would come from a database.
-    /// </summary>
-    private record DemoUser(string Username, string Password, string Role, int? GuestId = null);
-
-    private static readonly DemoUser[] DemoUsers =
-    [
-        new("admin", "admin123!", ApplicationRoles.Administrator),
-        new("reception", "reception123!", ApplicationRoles.Receptionist),
-        new("client", "client123!", ApplicationRoles.Client, GuestId: 1)
-    ];
+    private static readonly Microsoft.AspNetCore.Identity.PasswordHasher<string> Hasher = new();
 
     public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
@@ -28,16 +20,20 @@ public static class AuthEndpoints
             .AllowAnonymous();
 
         // POST /api/auth/token — issue a JWT
-        group.MapPost("/token", (LoginRequest request, IConfiguration config) =>
+        group.MapPost("/token", async (LoginRequest request, HotelDbContext db, IConfiguration config) =>
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
                 return Results.BadRequest(new { error = "Username and password are required." });
 
-            var user = DemoUsers.FirstOrDefault(u =>
-                u.Username.Equals(request.Username, StringComparison.OrdinalIgnoreCase) &&
-                u.Password == request.Password);
+            var user = await db.Users
+                .FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user is null)
+                return Results.Unauthorized();
+
+            var verificationResult = Hasher.VerifyHashedPassword(user.Username, user.PasswordHash, request.Password);
+            
+            if (verificationResult == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
                 return Results.Unauthorized();
 
             var token = GenerateJwtToken(user, config);
@@ -47,13 +43,59 @@ public static class AuthEndpoints
                 accessToken = token,
                 role = user.Role,
                 username = user.Username,
-                guestId = user.GuestId,
+                guestId = user.GuestID,
                 expiresIn = 3600
             });
         })
         .WithName("GetAuthToken")
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status400BadRequest);
+
+        // POST /api/auth/register — register a client
+        group.MapPost("/register", async (RegisterRequest request, HotelDbContext db) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Username) || 
+                string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.FirstName) ||
+                string.IsNullOrWhiteSpace(request.LastName) ||
+                string.IsNullOrWhiteSpace(request.Email))
+            {
+                return Results.BadRequest(new { error = "Username, password, first name, last name, and email are required." });
+            }
+
+            var existingUser = await db.Users.AnyAsync(u => u.Username == request.Username);
+            if (existingUser)
+            {
+                return Results.BadRequest(new { error = "Username is already taken." });
+            }
+
+            var passwordHash = Hasher.HashPassword(request.Username, request.Password);
+
+            var guest = new Guest
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                Phone = request.Phone
+            };
+
+            var user = new User
+            {
+                Username = request.Username,
+                PasswordHash = passwordHash,
+                Role = ApplicationRoles.Client,
+                Guest = guest
+            };
+
+            db.Guests.Add(guest);
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new { message = "Registration successful." });
+        })
+        .WithName("RegisterClient")
+        .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
         // GET /api/auth/me — return current user info from JWT
@@ -80,7 +122,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status401Unauthorized);
     }
 
-    private static string GenerateJwtToken(DemoUser user, IConfiguration config)
+    private static string GenerateJwtToken(User user, IConfiguration config)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
@@ -94,8 +136,8 @@ public static class AuthEndpoints
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        if (user.GuestId.HasValue)
-            claims.Add(new Claim("guestId", user.GuestId.Value.ToString()));
+        if (user.GuestID.HasValue)
+            claims.Add(new Claim("guestId", user.GuestID.Value.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: config["Jwt:Issuer"],
@@ -108,4 +150,13 @@ public static class AuthEndpoints
     }
 
     public record LoginRequest(string Username, string Password);
+    
+    public record RegisterRequest(
+        string Username,
+        string Password,
+        string FirstName,
+        string LastName,
+        string Email,
+        string? Phone
+    );
 }
