@@ -1,0 +1,34 @@
+# Lokalne sekrety i konfiguracja deweloperska (NIE trafia do repozytorium)
+appsettings.Local.json
+appsettings.*.Local.json
+
+
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Pliki tymczasowe i cache
+*.tmp
+*.temp
+*.log
+*.cache
+
+# NuGet
+packages/
+*.nupkg
+.nuget/
+
+# Entity Framework Migrations snapshots tymczasowe (migracje trzymamy)
+# (celowo brak wpisu — migracje są częścią kodu)
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini

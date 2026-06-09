@@ -1,6 +1,7 @@
 using System.Text.Json;
 using TB_NowyFolder.Security;
 using TB_NowyFolder.Data;
+using TB_NowyFolder.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace TB_NowyFolder.Endpoints;
@@ -13,6 +14,10 @@ public static class DocumentEndpoints
             .WithTags("Documents")
             .RequireAuthorization(AuthorizationPolicies.AdminOnly);
 
+        // GET /api/documents/generate/{reservationId}
+        // Generuje podpisany cyfrowo dokument potwierdzenia rezerwacji (podpis RSA-SHA256).
+        // UWAGA: Klucz RSA jest generowany przy starcie aplikacji i nie jest utrwalany.
+        // Weryfikacja podpisów z poprzednich sesji nie jest możliwa po restarcie serwera.
         group.MapGet("/generate/{reservationId}", async (int reservationId, HotelDbContext db, DigitalSignatureService signer) =>
         {
             var reservation = await db.Reservations
@@ -41,8 +46,15 @@ public static class DocumentEndpoints
                 Payload = payloadString,
                 Signature = signature
             });
-        });
+        })
+        .WithName("GenerateDocument")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
 
+        // POST /api/documents/verify
+        // Weryfikuje podpis cyfrowy dokumentu. Zwraca {IsValid: true/false}.
         group.MapPost("/verify", (VerifyRequest request, DigitalSignatureService signer) =>
         {
             if (string.IsNullOrWhiteSpace(request.Payload) || string.IsNullOrWhiteSpace(request.Signature))
@@ -51,12 +63,11 @@ public static class DocumentEndpoints
             bool isValid = signer.VerifySignature(request.Payload, request.Signature);
 
             return Results.Ok(new { IsValid = isValid });
-        });
+        })
+        .WithName("VerifyDocument")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
     }
-}
-
-public class VerifyRequest
-{
-    public string Payload { get; set; } = string.Empty;
-    public string Signature { get; set; } = string.Empty;
 }

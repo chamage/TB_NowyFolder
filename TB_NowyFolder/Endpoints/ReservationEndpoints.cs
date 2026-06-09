@@ -55,7 +55,8 @@ public static class ReservationEndpoints
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
         // GET reservation by ID
-        group.MapGet("/{id}", async (int id, HotelDbContext db) =>
+        // Staff/Admin widzą dowolną rezerwację. Klient widzi tylko SWOJĄ (sprawdzenie przez guestId z tokenu JWT).
+        group.MapGet("/{id}", async (int id, ClaimsPrincipal user, HotelDbContext db) =>
         {
             var reservation = await db.Reservations
                 .Include(r => r.Guest)
@@ -66,12 +67,22 @@ public static class ReservationEndpoints
                     .ThenInclude(rs => rs.Service)
                 .FirstOrDefaultAsync(r => r.ReservationID == id);
 
-            return reservation is not null
-                ? Results.Ok(reservation)
-                : Results.NotFound();
+            if (reservation is null)
+                return Results.NotFound();
+
+            // Jeśli użytkownik jest klientem, może zobaczyć tylko swoją rezerwację
+            if (user.IsInRole(ApplicationRoles.Client))
+            {
+                var guestIdClaim = user.FindFirst("guestId")?.Value;
+                if (!int.TryParse(guestIdClaim, out var guestId) || reservation.GuestID != guestId)
+                    return Results.Forbid();
+            }
+
+            return Results.Ok(reservation);
         })
         .WithName("GetReservationById")
         .Produces<Reservation>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         // GET reservations by guest
@@ -90,9 +101,11 @@ public static class ReservationEndpoints
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
         // POST create reservation
+        // Klient zawsze tworzy rezerwację dla siebie (guestId jest wymuszany z tokenu JWT).
+        // Staff/Admin może tworzyć dla dowolnego gościa.
         group.MapPost("/", async (Reservation reservation, ClaimsPrincipal user, HotelDbContext db) =>
         {
-            // If client, force guestId from JWT claim
+            // Jeśli klient — nadpisz GuestID wartością z tokenu (ochrona przed IDOR)
             if (user.IsInRole(ApplicationRoles.Client))
             {
                 var guestIdClaim = user.FindFirst("guestId")?.Value;
@@ -100,7 +113,7 @@ public static class ReservationEndpoints
                     reservation.GuestID = guestId;
             }
 
-            // Calculate price and occupy rooms if specified on creation
+            // Oblicz cenę i zajmij pokoje podane przy tworzeniu rezerwacji
             if (reservation.ReservationRooms != null && reservation.ReservationRooms.Any())
             {
                 int nights = reservation.CheckOutDate.DayNumber - reservation.CheckInDate.DayNumber;
@@ -124,9 +137,11 @@ public static class ReservationEndpoints
             return Results.Created($"/api/reservations/{reservation.ReservationID}", reservation);
         })
         .WithName("CreateReservation")
-        .Produces<Reservation>(StatusCodes.Status201Created);
+        .Produces<Reservation>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status401Unauthorized);
 
-        // PUT update reservation
+        // PUT update reservation — tylko Staff/Admin
+        // Klient nie może edytować rezerwacji bezpośrednio (np. zmienić GuestID na cudze).
         group.MapPut("/{id}", async (int id, Reservation inputReservation, HotelDbContext db) =>
         {
             var reservation = await db.Reservations.FindAsync(id);
@@ -142,12 +157,16 @@ public static class ReservationEndpoints
             await db.SaveChangesAsync();
             return Results.NoContent();
         })
+        .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin)
         .WithName("UpdateReservation")
         .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         // DELETE reservation
-        group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
+        // Klient może usunąć tylko swoją rezerwację. Staff/Admin może usunąć dowolną.
+        group.MapDelete("/{id}", async (int id, ClaimsPrincipal user, HotelDbContext db) =>
         {
             var reservation = await db.Reservations
                 .Include(r => r.ReservationRooms)
@@ -155,6 +174,14 @@ public static class ReservationEndpoints
                 .FirstOrDefaultAsync(r => r.ReservationID == id);
 
             if (reservation is null) return Results.NotFound();
+
+            // Klient może usunąć tylko swoją rezerwację
+            if (user.IsInRole(ApplicationRoles.Client))
+            {
+                var guestIdClaim = user.FindFirst("guestId")?.Value;
+                if (!int.TryParse(guestIdClaim, out var guestId) || reservation.GuestID != guestId)
+                    return Results.Forbid();
+            }
 
             if (reservation.ReservationRooms != null)
             {
@@ -173,6 +200,7 @@ public static class ReservationEndpoints
         })
         .WithName("DeleteReservation")
         .Produces(StatusCodes.Status204NoContent)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         // POST add room to reservation
@@ -210,7 +238,10 @@ public static class ReservationEndpoints
             return Results.Created($"/api/reservations/{reservationId}/rooms/{roomId}", reservationRoom);
         })
         .WithName("AddRoomToReservation")
+        .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin)
         .Produces<ReservationRoom>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
         // POST add service to reservation
@@ -250,8 +281,11 @@ public static class ReservationEndpoints
             return Results.Created($"/api/reservations/{reservationId}/services/{serviceId}", reservationService);
         })
         .WithName("AddServiceToReservation")
+        .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin)
         .Produces<ReservationService>(StatusCodes.Status201Created)
         .Produces<ReservationService>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
     }
 }

@@ -61,6 +61,16 @@ public class HotelDbContext : DbContext
             new Guest { GuestID = 2, FirstName = "Jane", LastName = "Smith", Email = "jane.smith@example.com", Phone = "098-765-4321" }
         );
 
+        // ============================================================
+        // SEED DATA — konta testowe do demonstracji aplikacji
+        // Hasła w postaci hashów PBKDF2 (ASP.NET Core Identity PasswordHasher)
+        //
+        //   admin      / hasło: Admin123!
+        //   reception  / hasło: Reception123!
+        //   client     / hasło: Client123!
+        //
+        // UWAGA: W produkcji należy usunąć seed lub zmienić hasła przed deploymentem.
+        // ============================================================
         modelBuilder.Entity<User>().HasData(
             new User { UserID = 1, Username = "admin", PasswordHash = "AQAAAAIAAYagAAAAEDIxCxLk7cO67wzbcIxZEhSNWwO3N7OB3apVA/gpSSaDEx9E2cO0kFL8kaMZmlw3qA==", Role = Security.ApplicationRoles.Administrator },
             new User { UserID = 2, Username = "reception", PasswordHash = "AQAAAAIAAYagAAAAEML12Nj+jhhywZ/TBEuyFOCAoQWcbiIiZXnp8fkBYkYBdViiElzI/uHC6vI3OqpAHA==", Role = Security.ApplicationRoles.Receptionist },

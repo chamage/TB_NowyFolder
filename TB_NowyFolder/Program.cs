@@ -9,6 +9,13 @@ using TB_NowyFolder.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Konfiguracja wielowarstwowa (kolejność ma znaczenie — późniejsze nadpisują wcześniejsze):
+//   1. appsettings.json          — bazowa konfiguracja (trafia do repo, nie zawiera sekretów)
+//   2. appsettings.{Environment}.json — nadpisania per-środowisko (Development/Production)
+//   3. appsettings.Local.json    — lokalne sekrety dewelopera (NIE trafia do repo, .gitignore)
+//   4. Zmienne środowiskowe      — używane w produkcji / kontenerze (Docker, Azure App Service)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 // Add services to the container.
 builder.Services.AddRazorPages();
 
@@ -81,7 +88,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// CORS for frontend
+// CORS — konfiguracja deweloperska: zezwala na żądania z każdej domeny.
+// W środowisku produkcyjnym należy ograniczyć do konkretnej domeny frontendu,
+// np.: policy.WithOrigins("https://moja-domena.pl").AllowAnyHeader().AllowAnyMethod();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -101,6 +110,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Swagger UI — dostępny TYLKO w środowisku deweloperskim (development).
+// W produkcji ten blok nie jest uruchamiany, więc dokumentacja API nie jest publicznie dostępna.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

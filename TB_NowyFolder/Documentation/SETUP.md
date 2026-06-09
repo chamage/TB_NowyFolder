@@ -38,9 +38,24 @@ dotnet restore
 
 ---
 
-## Krok 4: Sprawdź/Ustaw connection string
+## Krok 4: Skonfiguruj sekrety lokalne
 
-Plik: `TB_NowyFolder/appsettings.json`
+Sekrety (connection string, klucz JWT) przechowywane są w pliku `appsettings.Local.json`, który **nie trafia do repozytorium** (plik w `.gitignore`).
+
+Utwórz plik `TB_NowyFolder/appsettings.Local.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "..."
+  },
+  "Jwt": {
+    "Issuer": "TB_NowyFolder",
+    "Audience": "TB_NowyFolder.Client",
+    "Key": "Zx7Pq2Lm9Vt4Rs8Ny3Ka1Wd6Gh5BcEf0"
+  }
+}
+```
 
 ### Opcja A: LocalDB (jeśli masz Visual Studio)
 ```json
