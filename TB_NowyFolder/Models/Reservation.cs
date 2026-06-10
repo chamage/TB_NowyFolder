@@ -25,6 +25,7 @@ public class Reservation
     [Required]
     public int NumberOfGuests { get; set; }
 
+    // TotalPrice wyliczane przez serwer przy tworzeniu rezerwacji - klient nie może tej wartości ustawić ręcznie.
     [Required]
     [Column(TypeName = "decimal(18,2)")]
     public decimal TotalPrice { get; set; }
@@ -33,7 +34,7 @@ public class Reservation
     [MaxLength(50)]
     public string ReservationStatus { get; set; } = "Confirmed";
 
-    // Navigation properties
+    // Właściwości nawigacyjne - EF Core wypełnia je przy zapytaniu z Include().
     [ForeignKey(nameof(GuestID))]
     public virtual Guest? Guest { get; set; }
 

@@ -10,11 +10,13 @@ public static class GuestEndpoints
 {
     public static void MapGuestEndpoints(this IEndpointRouteBuilder app)
     {
+        // Wszystkie operacje na gościach wymagają roli Staff lub Admin.
+        // Klient nie ma dostępu do listy gości — dane innych gości są chronione.
         var group = app.MapGroup("/api/guests")
             .WithTags("Guests")
             .RequireAuthorization(AuthorizationPolicies.StaffOrAdmin);
 
-        // GET all guests
+        // Wyświetlanie listy gości
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.Guests.ToListAsync();
@@ -22,7 +24,7 @@ public static class GuestEndpoints
         .WithName("GetAllGuests")
         .Produces<List<Guest>>(StatusCodes.Status200OK);
 
-        // GET guest by ID
+        // Pobieranie gościa po ID
         group.MapGet("/{id}", async (int id, HotelDbContext db) =>
         {
             return await db.Guests.FindAsync(id)
@@ -34,7 +36,7 @@ public static class GuestEndpoints
         .Produces<Guest>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // POST create guest
+        // Dodawanie gościa
         group.MapPost("/", async (Guest guest, HotelDbContext db) =>
         {
             db.Guests.Add(guest);
@@ -44,7 +46,8 @@ public static class GuestEndpoints
         .WithName("CreateGuest")
         .Produces<Guest>(StatusCodes.Status201Created);
 
-        // PUT update guest
+
+        // Edycja gościa
         group.MapPut("/{id}", async (int id, Guest inputGuest, HotelDbContext db) =>
         {
             var guest = await db.Guests.FindAsync(id);
@@ -64,7 +67,7 @@ public static class GuestEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE guest
+        // Usuwanie gościa
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
             var guest = await db.Guests.FindAsync(id);

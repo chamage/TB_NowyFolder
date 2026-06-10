@@ -15,11 +15,13 @@ public class ReservationRoom
     [Required]
     public int RoomID { get; set; }
 
+    // Cena za noc jest kopiowana z pokoju w momencie tworzenia rezerwacji.
+    // Dzięki temu późniejsza zmiana cennika nie wpływa na istniejące rezerwacje.
     [Required]
     [Column(TypeName = "decimal(18,2)")]
     public decimal PricePerNight { get; set; }
 
-    // Navigation properties
+    // JsonIgnore zapobiega cyklicznej serializacji (Reservation -> ReservationRoom -> Reservation...).
     [JsonIgnore]
     [ForeignKey(nameof(ReservationID))]
     public virtual Reservation? Reservation { get; set; }

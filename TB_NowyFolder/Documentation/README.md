@@ -1,184 +1,176 @@
 # Hotel Reservation API
 
-A complete hotel reservation management system built with ASP.NET Core 9.0, Entity Framework Core, and Minimal APIs.
+Hotel reservation management system built with ASP.NET Core 9.0, Minimal APIs, Entity Framework Core, and JWT.
 
-## Features
+## Tech Stack
 
-- **Guest Management**: Create, read, update, and delete guest information
-- **Room Type Management**: Manage different types of rooms (Single, Double, Suite)
-- **Room Management**: Track individual rooms with availability status
-- **Service Management**: Manage hotel services (Breakfast, Spa, etc.)
-- **Reservation Management**: Create and manage reservations with rooms and services
+- ASP.NET Core 9.0 (Minimal API + Razor Pages)
+- Entity Framework Core 9.0 + SQL Server / LocalDB
+- JWT Bearer authentication
+- RBAC — Role-Based Access Control (Administrator, Receptionist, Client)
+- RSA-SHA256 digital signatures for document generation
+- Swagger / OpenAPI
 
-## Database
+## Authorization
 
-The application uses SQL Server LocalDB with the following connection string:
-```
-Server=(localdb)\\mssqllocaldb;Database=HotelReservationDB;Trusted_Connection=True;MultipleActiveResultSets=true
-```
+All protected endpoints require a JWT token obtained from `POST /api/auth/token`.
 
-### Initial Data
+Three roles with different access levels:
 
-The database is seeded with sample data:
-- 2 Guests (John Doe, Jane Smith)
-- 3 Room Types (Single, Double, Suite)
-- 5 Rooms (101, 102, 201, 202, 301)
-- 4 Services (Breakfast, Room Service, Spa Treatment, Airport Transfer)
+| Role | Access |
+|---|---|
+| `Administrator` | Full access to all endpoints |
+| `Receptionist` | Reservations and guests — no access to dictionary management (rooms, room types, services) |
+| `Client` | Own reservations only |
+
+Demo accounts:
+
+| Username | Password | Role |
+|---|---|---|
+| `admin` | `Admin123!` | Administrator |
+| `reception` | `Reception123!` | Receptionist |
+| `client` | `Client123!` | Client |
 
 ## Running the Application
 
-1. Make sure SQL Server LocalDB is installed
-2. Run the application:
-   ```bash
-   dotnet run
-   ```
-3. Navigate to: `https://localhost:5001/swagger` (or the HTTPS port shown in console)
-
-## API Endpoints
-
-### Guests (`/api/guests`)
-- `GET /api/guests` - Get all guests
-- `GET /api/guests/{id}` - Get guest by ID
-- `POST /api/guests` - Create new guest
-- `PUT /api/guests/{id}` - Update guest
-- `DELETE /api/guests/{id}` - Delete guest
-
-### Room Types (`/api/roomtypes`)
-- `GET /api/roomtypes` - Get all room types
-- `GET /api/roomtypes/{id}` - Get room type by ID
-- `POST /api/roomtypes` - Create new room type
-- `PUT /api/roomtypes/{id}` - Update room type
-- `DELETE /api/roomtypes/{id}` - Delete room type
-
-### Rooms (`/api/rooms`)
-- `GET /api/rooms` - Get all rooms
-- `GET /api/rooms/{id}` - Get room by ID
-- `GET /api/rooms/available` - Get available rooms only
-- `POST /api/rooms` - Create new room
-- `PUT /api/rooms/{id}` - Update room
-- `DELETE /api/rooms/{id}` - Delete room
-
-### Services (`/api/services`)
-- `GET /api/services` - Get all services
-- `GET /api/services/{id}` - Get service by ID
-- `GET /api/services/available` - Get available services only
-- `POST /api/services` - Create new service
-- `PUT /api/services/{id}` - Update service
-- `DELETE /api/services/{id}` - Delete service
-
-### Reservations (`/api/reservations`)
-- `GET /api/reservations` - Get all reservations
-- `GET /api/reservations/{id}` - Get reservation by ID
-- `GET /api/reservations/guest/{guestId}` - Get reservations by guest
-- `POST /api/reservations` - Create new reservation
-- `PUT /api/reservations/{id}` - Update reservation
-- `DELETE /api/reservations/{id}` - Delete reservation
-- `POST /api/reservations/{reservationId}/rooms/{roomId}` - Add room to reservation
-- `POST /api/reservations/{reservationId}/services/{serviceId}` - Add service to reservation
-
-## Testing in Swagger
-
-1. Start the application
-2. Open Swagger UI at `/swagger`
-3. Try these example operations:
-
-### Example 1: Create a Reservation
-
-1. **Create a new guest** (if needed):
-   ```json
-   POST /api/guests
-   {
-     "firstName": "Alice",
-     "lastName": "Johnson",
-     "email": "alice@example.com",
-     "phone": "555-1234"
-   }
-   ```
-
-2. **Create a reservation**:
-   ```json
-   POST /api/reservations
-   {
-     "guestID": 1,
-     "checkInDate": "2025-01-15",
-     "checkOutDate": "2025-01-20",
-     "numberOfGuests": 2,
-     "totalPrice": 750.00,
-     "reservationStatus": "Confirmed"
-   }
-   ```
-
-3. **Add a room to the reservation**:
-   ```
-   POST /api/reservations/1/rooms/1
-   ```
-
-4. **Add a service to the reservation**:
-   ```json
-   POST /api/reservations/1/services/1
-   {
-     "quantity": 2,
-     "serviceDate": "2025-01-16"
-   }
-   ```
-
-### Example 2: View Available Rooms
-
-```
-GET /api/rooms/available
-```
-
-### Example 3: View Guest's Reservations
-
-```
-GET /api/reservations/guest/1
-```
-
-## Database Migrations
-
-To update the database schema:
+For environment setup and database configuration see [SETUP.md](SETUP.md).
 
 ```bash
-# Create a new migration
-dotnet ef migrations add MigrationName
-
-# Apply migrations to database
-dotnet ef database update
-
-# Remove last migration
-dotnet ef migrations remove
+dotnet run --project TB_NowyFolder
 ```
 
-## Technologies Used
+Swagger UI: `https://localhost:7029/swagger`
 
-- ASP.NET Core 9.0
-- Entity Framework Core 9.0
-- SQL Server LocalDB
-- Swagger/OpenAPI
-- Minimal APIs
+## API Reference
+
+### Auth (`/api/auth`) — public
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/auth/token` | Login — returns a JWT token |
+| `POST` | `/api/auth/register` | Register new client account |
+| `GET` | `/api/auth/me` | Current user info (requires token) |
+
+### Guests (`/api/guests`) — Staff/Admin only
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/guests` | List all guests |
+| `GET` | `/api/guests/{id}` | Get guest by ID |
+| `POST` | `/api/guests` | Create guest |
+| `PUT` | `/api/guests/{id}` | Update guest |
+| `DELETE` | `/api/guests/{id}` | Delete guest |
+
+### Room Types (`/api/roomtypes`) — read: public, write: Admin only
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/roomtypes` | List all room types |
+| `GET` | `/api/roomtypes/{id}` | Get room type by ID |
+| `POST` | `/api/roomtypes` | Create room type |
+| `PUT` | `/api/roomtypes/{id}` | Update room type |
+| `DELETE` | `/api/roomtypes/{id}` | Delete room type |
+
+### Rooms (`/api/rooms`) — read: public, write: Admin only
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/rooms` | List all rooms |
+| `GET` | `/api/rooms/{id}` | Get room by ID |
+| `GET` | `/api/rooms/available` | List available rooms only |
+| `POST` | `/api/rooms` | Create room |
+| `PUT` | `/api/rooms/{id}` | Update room |
+| `DELETE` | `/api/rooms/{id}` | Delete room |
+
+### Services (`/api/services`) — read: public, write: Admin only
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/services` | List all services |
+| `GET` | `/api/services/{id}` | Get service by ID |
+| `GET` | `/api/services/available` | List available services only |
+| `POST` | `/api/services` | Create service |
+| `PUT` | `/api/services/{id}` | Update service |
+| `DELETE` | `/api/services/{id}` | Delete service |
+
+### Reservations (`/api/reservations`) — requires JWT token
+
+| Method | Endpoint | Access | Description |
+|---|---|---|---|
+| `GET` | `/api/reservations` | Staff/Admin | List all reservations |
+| `GET` | `/api/reservations/my` | Authenticated | Client's own reservations |
+| `GET` | `/api/reservations/{id}` | Authenticated | Reservation details (clients see own only) |
+| `GET` | `/api/reservations/guest/{guestId}` | Staff/Admin | Reservations by guest |
+| `POST` | `/api/reservations` | Authenticated | Create reservation |
+| `PUT` | `/api/reservations/{id}` | Staff/Admin | Update reservation |
+| `DELETE` | `/api/reservations/{id}` | Authenticated | Delete reservation (clients delete own only) |
+| `POST` | `/api/reservations/{id}/rooms/{roomId}` | Staff/Admin | Add room to reservation |
+| `POST` | `/api/reservations/{id}/services/{serviceId}` | Staff/Admin | Add service to reservation |
+
+### Documents (`/api/documents`) — Admin only
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/documents/generate/{reservationId}` | Generate digitally signed booking receipt (RSA-SHA256) |
+| `POST` | `/api/documents/verify` | Verify document signature — returns `{ IsValid: true/false }` |
+
+> **Note:** The RSA key is generated in memory at application startup. After a restart, signatures from previous sessions cannot be verified.
+
+## Seed Data
+
+The database is populated via EF Core migrations:
+
+- 3 room types: Single, Double, Suite
+- 5 rooms: 101, 102, 201, 202, 301
+- 4 services: Breakfast, Room Service, Spa Treatment, Airport Transfer
+- 2 demo guests: John Doe, Jane Smith
+- 3 user accounts (passwords stored as PBKDF2 hashes — see demo accounts above)
 
 ## Project Structure
 
 ```
 TB_NowyFolder/
-??? Data/
-?   ??? HotelDbContext.cs       # Database context
-??? Endpoints/
-?   ??? GuestEndpoints.cs        # Guest API endpoints
-?   ??? RoomTypeEndpoints.cs     # Room type API endpoints
-?   ??? RoomEndpoints.cs         # Room API endpoints
-?   ??? ServiceEndpoints.cs      # Service API endpoints
-?   ??? ReservationEndpoints.cs  # Reservation API endpoints
-??? Models/
-?   ??? Guest.cs
-?   ??? Room.cs
-?   ??? RoomType.cs
-?   ??? Service.cs
-?   ??? Reservation.cs
-?   ??? ReservationRoom.cs
-?   ??? ReservationService.cs
-??? Migrations/                  # EF Core migrations
-??? Pages/                       # Razor Pages
-??? appsettings.json            # Configuration
-??? Program.cs                   # Application startup
+├── Data/
+│   └── HotelDbContext.cs        # EF Core context, model configuration, seed data
+├── Endpoints/
+│   ├── AuthEndpoints.cs         # Login, register, /me
+│   ├── GuestEndpoints.cs        # Guest CRUD
+│   ├── RoomTypeEndpoints.cs     # Room type CRUD
+│   ├── RoomEndpoints.cs         # Room CRUD
+│   ├── ServiceEndpoints.cs      # Service CRUD
+│   ├── ReservationEndpoints.cs  # Reservation CRUD + sub-endpoints
+│   └── DocumentEndpoints.cs     # Digital document generation and verification
+├── Models/
+│   ├── Guest.cs
+│   ├── Room.cs
+│   ├── RoomType.cs
+│   ├── Service.cs
+│   ├── Reservation.cs
+│   ├── ReservationRoom.cs       # Join table with composite key
+│   ├── ReservationService.cs    # Join table with composite key
+│   ├── User.cs
+│   └── VerifyRequest.cs         # Request model for document verification
+├── Security/
+│   ├── ApplicationRoles.cs      # Role name constants
+│   ├── AuthorizationPolicies.cs # RBAC policy registration
+│   └── DigitalSignatureService.cs  # RSA-SHA256 sign and verify
+├── Migrations/                  # EF Core migrations
+├── Pages/                       # Razor Pages (frontend)
+├── Documentation/               # Project documentation
+├── appsettings.json             # Configuration template (no secrets, committed to repo)
+├── appsettings.Local.json       # Local secrets — NOT in repo (.gitignore)
+└── Program.cs                   # Application startup and DI configuration
+```
+
+## EF Core Migrations
+
+```bash
+# Add migration after model changes
+dotnet ef migrations add MigrationName --project TB_NowyFolder --startup-project TB_NowyFolder
+
+# Apply migrations to database
+dotnet ef database update --project TB_NowyFolder --startup-project TB_NowyFolder
+
+# Remove last migration (if not yet applied)
+dotnet ef migrations remove --project TB_NowyFolder --startup-project TB_NowyFolder
 ```

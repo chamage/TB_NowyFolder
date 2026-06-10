@@ -13,7 +13,7 @@ public static class ServiceEndpoints
         var group = app.MapGroup("/api/services")
             .WithTags("Services");
 
-        // GET all services — public
+        // Wyświetlanie listy usług
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.Services.ToListAsync();
@@ -22,7 +22,7 @@ public static class ServiceEndpoints
         .WithName("GetAllServices")
         .Produces<List<Service>>(StatusCodes.Status200OK);
 
-        // GET service by ID — public
+        // Pobieranie usługi po ID
         group.MapGet("/{id}", async (int id, HotelDbContext db) =>
         {
             return await db.Services.FindAsync(id)
@@ -35,7 +35,7 @@ public static class ServiceEndpoints
         .Produces<Service>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // GET available services — public
+        // Wyświetlanie dostępnych usług
         group.MapGet("/available", async (HotelDbContext db) =>
         {
             return await db.Services
@@ -46,7 +46,7 @@ public static class ServiceEndpoints
         .WithName("GetAvailableServices")
         .Produces<List<Service>>(StatusCodes.Status200OK);
 
-        // POST create service — Admin only
+        // Dodawanie usługi
         group.MapPost("/", async (Service service, HotelDbContext db) =>
         {
             db.Services.Add(service);
@@ -57,7 +57,7 @@ public static class ServiceEndpoints
         .WithName("CreateService")
         .Produces<Service>(StatusCodes.Status201Created);
 
-        // PUT update service — Admin only
+        // Edytowanie usługi
         group.MapPut("/{id}", async (int id, Service inputService, HotelDbContext db) =>
         {
             var service = await db.Services.FindAsync(id);
@@ -76,7 +76,7 @@ public static class ServiceEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE service — Admin only
+        // Usuwanie usługi
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
             var service = await db.Services.FindAsync(id);

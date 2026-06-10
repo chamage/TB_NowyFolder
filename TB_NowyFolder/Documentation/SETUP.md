@@ -106,15 +106,14 @@ Aplikacja powinna być dostępna pod: `https://localhost:7xxx/`
 
 1. Otwórz `https://localhost:7xxx/swagger` → powinna być dokumentacja API
 2. Otwórz `https://localhost:7xxx/` → powinna być strona główna z loginowaniem
-3. Zaloguj się demo: `admin / admin123!`
+3. Zaloguj się demo: `admin / Admin123!`
 
 ---
 
 ## Troubleshooting
 
 ### Błąd: "A network-related or instance-specific error occurred"
-- Sprawdź czy SQL Server / LocalDB działa
-- Powinieneś być connectem do internetu (zmień `Trusted_Connection=True` na `User ID=sa;Password=...` jeśli auth nie działa)
+- Sprawdź czy SQL Server / LocalDB jest uruchomiony (w Visual Studio: SQL Server Object Explorer, albo `sqllocaldb info MSSQLLocalDB`)
 
 ### Błąd: "The required 'Microsoft.EntityFrameworkCore' package was not found"
 ```bash
@@ -139,15 +138,16 @@ dotnet ef database update
 
 ## Konta demo (po zalogowaniu się)
 
-- `admin` / `admin123!` → Administrator
-- `reception` / `reception123!` → Receptionist
-- `client` / `client123!` → Client
+- `admin` / `Admin123!` → Administrator
+- `reception` / `Reception123!` → Receptionist
+- `client` / `Client123!` → Client
 
 ---
 
 ## Jeśli dalej nie działa
 
-Jakie dokładnie błędy wyskakują? Powiedz:
-1. Na którym kroku się zatrzymujesz?
-2. Dokładny tekst błędu (screenshot lub copy-paste)
-3. Czy SQL Server / LocalDB jest zainstalowany i uruchomiony?
+Sprawdź:
+1. Czy plik `appsettings.Local.json` istnieje i ma poprawny connection string.
+2. Czy migracje zostały zastosowane (`dotnet ef database update`).
+3. Czy SQL Server / LocalDB jest uruchomiony.
+4. Dokładny tekst błędu z terminala (najczęściej jest tam konkretna przyczyna).

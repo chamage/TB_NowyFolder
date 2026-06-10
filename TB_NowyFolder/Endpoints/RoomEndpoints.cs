@@ -13,7 +13,7 @@ public static class RoomEndpoints
         var group = app.MapGroup("/api/rooms")
             .WithTags("Rooms");
 
-        // GET all rooms — public (offer browsing)
+        // Przeglądanie pokoi jest publiczne — niezalogowany użytkownik może zobaczyć ofertę.
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.Rooms.Include(r => r.RoomType).ToListAsync();
@@ -22,7 +22,7 @@ public static class RoomEndpoints
         .WithName("GetAllRooms")
         .Produces<List<Room>>(StatusCodes.Status200OK);
 
-        // GET room by ID — public
+        // Pobieranie pokoju po ID
         group.MapGet("/{id}", async (int id, HotelDbContext db) =>
         {
             var room = await db.Rooms
@@ -38,7 +38,7 @@ public static class RoomEndpoints
         .Produces<Room>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // GET available rooms — public
+        // Wyświetlanie dostępnych pokoi
         group.MapGet("/available", async (HotelDbContext db) =>
         {
             return await db.Rooms
@@ -50,7 +50,7 @@ public static class RoomEndpoints
         .WithName("GetAvailableRooms")
         .Produces<List<Room>>(StatusCodes.Status200OK);
 
-        // POST create room — Admin only
+        // Dodawanie pokoju
         group.MapPost("/", async (Room room, HotelDbContext db) =>
         {
             db.Rooms.Add(room);
@@ -61,7 +61,8 @@ public static class RoomEndpoints
         .WithName("CreateRoom")
         .Produces<Room>(StatusCodes.Status201Created);
 
-        // PUT update room — Admin only
+
+        // Edytowanie pokoju
         group.MapPut("/{id}", async (int id, Room inputRoom, HotelDbContext db) =>
         {
             var room = await db.Rooms.FindAsync(id);
@@ -81,7 +82,7 @@ public static class RoomEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE room — Admin only
+        // Usuwanie pokoju
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
             var room = await db.Rooms.FindAsync(id);

@@ -13,7 +13,7 @@ public static class RoomTypeEndpoints
         var group = app.MapGroup("/api/roomtypes")
             .WithTags("Room Types");
 
-        // GET all room types — public
+        // Wyświetlanie listy typów pokoi
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.RoomTypes.ToListAsync();
@@ -22,7 +22,7 @@ public static class RoomTypeEndpoints
         .WithName("GetAllRoomTypes")
         .Produces<List<RoomType>>(StatusCodes.Status200OK);
 
-        // GET room type by ID — public
+        // Pobieranie typu pokoju po ID
         group.MapGet("/{id}", async (int id, HotelDbContext db) =>
         {
             return await db.RoomTypes.FindAsync(id)
@@ -35,7 +35,7 @@ public static class RoomTypeEndpoints
         .Produces<RoomType>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound);
 
-        // POST create room type — Admin only
+        // Dodawanie typu pokoju
         group.MapPost("/", async (RoomType roomType, HotelDbContext db) =>
         {
             db.RoomTypes.Add(roomType);
@@ -46,7 +46,7 @@ public static class RoomTypeEndpoints
         .WithName("CreateRoomType")
         .Produces<RoomType>(StatusCodes.Status201Created);
 
-        // PUT update room type — Admin only
+        // Edytowanie typu pokoju
         group.MapPut("/{id}", async (int id, RoomType inputRoomType, HotelDbContext db) =>
         {
             var roomType = await db.RoomTypes.FindAsync(id);
@@ -64,7 +64,7 @@ public static class RoomTypeEndpoints
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE room type — Admin only
+        // Usuwanie typu pokoju
         group.MapDelete("/{id}", async (int id, HotelDbContext db) =>
         {
             var roomType = await db.RoomTypes.FindAsync(id);

@@ -18,6 +18,7 @@ public class Guest
     [MaxLength(100)]
     public string LastName { get; set; } = string.Empty;
 
+    // [EmailAddress] waliduje format emaila na poziomie modelu - dodatkowe zabezpieczenie obok walidacji frontendu.
     [Required]
     [MaxLength(255)]
     [EmailAddress]
@@ -32,7 +33,7 @@ public class Guest
     [MaxLength(500)]
     public string? Notes { get; set; }
 
-    // Navigation property
+    // JsonIgnore zapobiega cyklicznej serializacji przy serializacji gościa z listą jego rezerwacji.
     [JsonIgnore]
     public virtual ICollection<Reservation>? Reservations { get; set; }
 }

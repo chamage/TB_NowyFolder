@@ -15,11 +15,12 @@ public static class AuthEndpoints
 
     public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
+        // Endpointy auth są publiczne - nie wymagają tokenu.
         var group = app.MapGroup("/api/auth")
             .WithTags("Authentication")
             .AllowAnonymous();
 
-        // POST /api/auth/token — issue a JWT
+        // POST /api/auth/token — logowanie i wydanie tokenu JWT
         group.MapPost("/token", async (LoginRequest request, HotelDbContext db, IConfiguration config) =>
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -31,6 +32,7 @@ public static class AuthEndpoints
             if (user is null)
                 return Results.Unauthorized();
 
+            // Weryfikacja przez PBKDF2 - hasło nigdy nie jest przechowywane w postaci jawnej.
             var verificationResult = Hasher.VerifyHashedPassword(user.Username, user.PasswordHash, request.Password);
             
             if (verificationResult == Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed)
@@ -52,7 +54,8 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status400BadRequest);
 
-        // POST /api/auth/register — register a client
+        // POST /api/auth/register - rejestracja nowego klienta
+        // Rola jest zawsze ustawiana na Client - nie ma możliwości założenia konta Admina przez API.
         group.MapPost("/register", async (RegisterRequest request, HotelDbContext db) =>
         {
             if (string.IsNullOrWhiteSpace(request.Username) || 
@@ -85,11 +88,13 @@ public static class AuthEndpoints
                 Username = request.Username,
                 PasswordHash = passwordHash,
                 Role = ApplicationRoles.Client,
+                // Klient jest od razu powiązany z profilem gościa - dzięki temu guestId trafia do tokenu JWT.
                 Guest = guest
             };
 
             db.Guests.Add(guest);
             db.Users.Add(user);
+            // Zapis gościa i użytkownika razem - jeśli coś się nie uda, EF Core cofa całość.
             await db.SaveChangesAsync();
 
             return Results.Ok(new { message = "Registration successful." });
@@ -98,7 +103,7 @@ public static class AuthEndpoints
         .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
-        // GET /api/auth/me — return current user info from JWT
+        // GET /api/auth/me — dane zalogowanego użytkownika odczytane z claimów JWT
         group.MapGet("/me", (ClaimsPrincipal user) =>
         {
             if (user.Identity?.IsAuthenticated != true)
@@ -128,14 +133,17 @@ public static class AuthEndpoints
             Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Payload tokenu jest w Base64 - klient może go odczytać, ale nie może zmienić bez unieważnienia podpisu.
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.Username),
             new(ClaimTypes.Role, user.Role),
             new(JwtRegisteredClaimNames.Sub, user.Username),
+            // Jti - unikalny ID tokenu, przydatny gdyby dodawać mechanizm unieważniania.
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
+        // guestId trafia do tokenu tylko dla klientów - endpointy rezerwacji używają go do sprawdzenia właściciela.
         if (user.GuestID.HasValue)
             claims.Add(new Claim("guestId", user.GuestID.Value.ToString()));
 

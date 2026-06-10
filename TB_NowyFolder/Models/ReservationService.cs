@@ -18,10 +18,11 @@ public class ReservationService
     [Required]
     public int Quantity { get; set; }
 
+    // ServiceDate jest częścią klucza złożonego - ta sama usługa może być zamawiana wielokrotnie w różnych dniach.
     [Required]
     public DateOnly ServiceDate { get; set; }
 
-    // Navigation properties
+    // JsonIgnore zapobiega cyklicznej serializacji (Reservation -> ReservationService -> Reservation...).
     [JsonIgnore]
     [ForeignKey(nameof(ReservationID))]
     public virtual Reservation? Reservation { get; set; }

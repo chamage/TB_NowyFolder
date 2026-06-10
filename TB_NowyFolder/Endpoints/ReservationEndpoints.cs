@@ -12,11 +12,12 @@ public static class ReservationEndpoints
 {
     public static void MapReservationEndpoints(this IEndpointRouteBuilder app)
     {
+        // Każdy endpoint rezerwacji wymaga zalogowania, niektóre dodatkowo roli StaffOrAdmin.
         var group = app.MapGroup("/api/reservations")
             .WithTags("Reservations")
             .RequireAuthorization(AuthorizationPolicies.AuthenticatedUser);
 
-        // GET all reservations — Staff/Admin only
+        // GET /api/reservations — lista wszystkich rezerwacji, tylko Staff/Admin
         group.MapGet("/", async (HotelDbContext db) =>
         {
             return await db.Reservations
@@ -32,7 +33,8 @@ public static class ReservationEndpoints
         .WithName("GetAllReservations")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
-        // GET /api/reservations/my — Client's own reservations
+        // GET /api/reservations/my — rezerwacje zalogowanego klienta
+        // GuestID pobierany z tokenu JWT - klient widzi tylko swoje rezerwacje.
         group.MapGet("/my", async (ClaimsPrincipal user, HotelDbContext db) =>
         {
             var guestIdClaim = user.FindFirst("guestId")?.Value;
@@ -54,8 +56,7 @@ public static class ReservationEndpoints
         .WithName("GetMyReservations")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
-        // GET reservation by ID
-        // Staff/Admin widzą dowolną rezerwację. Klient widzi tylko SWOJĄ (sprawdzenie przez guestId z tokenu JWT).
+        // Staff/Admin widzi każdą. Klient widzi tylko swoją - guestId z tokenu jest porównywane z GuestID rezerwacji.
         group.MapGet("/{id}", async (int id, ClaimsPrincipal user, HotelDbContext db) =>
         {
             var reservation = await db.Reservations
@@ -70,7 +71,7 @@ public static class ReservationEndpoints
             if (reservation is null)
                 return Results.NotFound();
 
-            // Jeśli użytkownik jest klientem, może zobaczyć tylko swoją rezerwację
+            // Ochrona przed IDOR - klient nie może podglądać cudzej rezerwacji.
             if (user.IsInRole(ApplicationRoles.Client))
             {
                 var guestIdClaim = user.FindFirst("guestId")?.Value;
@@ -85,7 +86,7 @@ public static class ReservationEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        // GET reservations by guest
+        // GET /api/reservations/guest/{guestId} — rezerwacje konkretnego gościa, tylko Staff/Admin
         group.MapGet("/guest/{guestId}", async (int guestId, HotelDbContext db) =>
         {
             return await db.Reservations
@@ -100,12 +101,11 @@ public static class ReservationEndpoints
         .WithName("GetReservationsByGuest")
         .Produces<List<Reservation>>(StatusCodes.Status200OK);
 
-        // POST create reservation
-        // Klient zawsze tworzy rezerwację dla siebie (guestId jest wymuszany z tokenu JWT).
-        // Staff/Admin może tworzyć dla dowolnego gościa.
+        // POST /api/reservations - tworzenie rezerwacji
+        // Klient zawsze dostaje swoje GuestID z tokenu - nie może podać cudzego ID w żądaniu.
         group.MapPost("/", async (Reservation reservation, ClaimsPrincipal user, HotelDbContext db) =>
         {
-            // Jeśli klient — nadpisz GuestID wartością z tokenu (ochrona przed IDOR)
+            // Nadpisanie GuestID wartością z tokenu - ochrona przed IDOR.
             if (user.IsInRole(ApplicationRoles.Client))
             {
                 var guestIdClaim = user.FindFirst("guestId")?.Value;
@@ -113,7 +113,7 @@ public static class ReservationEndpoints
                     reservation.GuestID = guestId;
             }
 
-            // Oblicz cenę i zajmij pokoje podane przy tworzeniu rezerwacji
+            // Cena wyliczana przez serwer na podstawie cen pokoi i liczby nocy.
             if (reservation.ReservationRooms != null && reservation.ReservationRooms.Any())
             {
                 int nights = reservation.CheckOutDate.DayNumber - reservation.CheckInDate.DayNumber;
@@ -133,6 +133,7 @@ public static class ReservationEndpoints
             }
 
             db.Reservations.Add(reservation);
+            // Rezerwacja, pokoje i status pokoju zapisywane razem w jednej transakcji EF Core.
             await db.SaveChangesAsync();
             return Results.Created($"/api/reservations/{reservation.ReservationID}", reservation);
         })
@@ -140,8 +141,8 @@ public static class ReservationEndpoints
         .Produces<Reservation>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status401Unauthorized);
 
-        // PUT update reservation — tylko Staff/Admin
-        // Klient nie może edytować rezerwacji bezpośrednio (np. zmienić GuestID na cudze).
+        // PUT /api/reservations/{id} - tylko Staff/Admin
+        // Klient nie może sam edytować rezerwacji, m.in. zmieniać jej GuestID.
         group.MapPut("/{id}", async (int id, Reservation inputReservation, HotelDbContext db) =>
         {
             var reservation = await db.Reservations.FindAsync(id);
@@ -164,8 +165,8 @@ public static class ReservationEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        // DELETE reservation
-        // Klient może usunąć tylko swoją rezerwację. Staff/Admin może usunąć dowolną.
+        // DELETE /api/reservations/{id}
+        // Klient może usunąć tylko swoją rezerwację - analogiczna ochrona jak przy GET.
         group.MapDelete("/{id}", async (int id, ClaimsPrincipal user, HotelDbContext db) =>
         {
             var reservation = await db.Reservations
@@ -175,7 +176,7 @@ public static class ReservationEndpoints
 
             if (reservation is null) return Results.NotFound();
 
-            // Klient może usunąć tylko swoją rezerwację
+            // Ten sam check co w GET - klient nie może usunąć cudzej rezerwacji.
             if (user.IsInRole(ApplicationRoles.Client))
             {
                 var guestIdClaim = user.FindFirst("guestId")?.Value;
@@ -183,6 +184,7 @@ public static class ReservationEndpoints
                     return Results.Forbid();
             }
 
+            // Przy usuwaniu rezerwacji pokoje wracają do statusu Available.
             if (reservation.ReservationRooms != null)
             {
                 foreach (var rr in reservation.ReservationRooms)
@@ -203,7 +205,7 @@ public static class ReservationEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        // POST add room to reservation
+        // POST /api/reservations/{reservationId}/rooms/{roomId} — dodanie pokoju do rezerwacji, Staff/Admin
         group.MapPost("/{reservationId}/rooms/{roomId}", async (int reservationId, int roomId, HotelDbContext db) =>
         {
             var reservation = await db.Reservations
@@ -244,7 +246,8 @@ public static class ReservationEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        // POST add service to reservation
+        // POST /{reservationId}/services/{serviceId} - Staff/Admin
+        // Jeśli ta sama usługa na ten sam dzień już istnieje, ilość jest sumowana zamiast tworzyć nowy wpis.
         group.MapPost("/{reservationId}/services/{serviceId}", async (int reservationId, int serviceId, ReservationService input, HotelDbContext db) =>
         {
             var reservation = await db.Reservations.FindAsync(reservationId);

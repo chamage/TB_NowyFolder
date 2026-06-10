@@ -5,27 +5,27 @@ namespace TB_NowyFolder.Security;
 
 public class DigitalSignatureService
 {
-    // Mechanizm RSA do podpisywania i sprawdzania danych
     private readonly RSA _rsa;
 
     public DigitalSignatureService()
     {
-        // Tworzenie kluczy RSA o długości 2048 bitów
+        // Klucz RSA generowany przy starcie, tylko w pamięci - po restarcie podpisy z poprzedniej sesji nie dadzą się zweryfikować.
+        // W produkcji klucz powinien być utrwalony (np. Azure Key Vault).
         _rsa = RSA.Create(2048);
     }
 
     public string SignData(string payload)
     {
-        // Ujednolicenie tekstu przed podpisaniem
+        // Normalizacja \r\n -> \n przed podpisaniem, żeby podpis był spójny na różnych systemach.
         payload = payload.Replace("\r\n", "\n").Trim();
 
-        // Zamiana tekstu na bajty
+
         var dataBytes = Encoding.UTF8.GetBytes(payload);
 
-        // Tworzenie podpisu cyfrowego
+        // Podpisanie danych algorytmem SHA256 z paddingiem PKCS1.
         var signatureBytes = _rsa.SignData(dataBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-        // Zamiana podpisu na tekst Base64
+        // Zwrócenie podpisu Base64, żeby można go było dołączyć do JSONa.
         return Convert.ToBase64String(signatureBytes);
     }
 
@@ -33,21 +33,22 @@ public class DigitalSignatureService
     {
         try
         {
-            // Ujednolicenie tekstu przed sprawdzeniem podpisu
+
+            // Normalizacja \r\n -> \n przed zweryfikowaniem, żeby podpis był spójny na różnych systemach.
             payload = payload.Replace("\r\n", "\n").Trim();
 
-            // Zamiana tekstu na bajty
+
             var dataBytes = Encoding.UTF8.GetBytes(payload);
 
-            // Odczyt podpisu z Base64
+            // Konwersja Base64 na bajty.
             var signatureBytes = Convert.FromBase64String(signatureBase64);
 
-            // Sprawdzenie czy podpis jest poprawny
+            // Weryfikacja podpisu algorytmem SHA256 z paddingiem PKCS1.
             return _rsa.VerifyData(dataBytes, signatureBytes, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
         }
         catch
         {
-            // Zwrócenie false jeśli wystąpi błąd
+            // Błędny Base64, uszkodzony podpis itp. - traktowane jako nieprawidłowy podpis.
             return false;
         }
     }

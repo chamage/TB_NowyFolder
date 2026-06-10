@@ -9,21 +9,18 @@ using TB_NowyFolder.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Konfiguracja wielowarstwowa (kolejność ma znaczenie — późniejsze nadpisują wcześniejsze):
-//   1. appsettings.json          — bazowa konfiguracja (trafia do repo, nie zawiera sekretów)
-//   2. appsettings.{Environment}.json — nadpisania per-środowisko (Development/Production)
-//   3. appsettings.Local.json    — lokalne sekrety dewelopera (NIE trafia do repo, .gitignore)
-//   4. Zmienne środowiskowe      — używane w produkcji / kontenerze (Docker, Azure App Service)
+// Kolejność ładowania konfiguracji (każdy następny nadpisuje poprzedni):
+//   appsettings.json -> appsettings.{Env}.json -> appsettings.Local.json -> zmienne środowiskowe
+// appsettings.Local.json zawiera lokalne sekrety i jest wykluczone z repo (.gitignore)
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 
-// Add Database Context
 builder.Services.AddDbContext<HotelDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// JWT Authentication
+// JWT Bearer - middleware waliduje token przy każdym żądaniu.
+// Wszystkie cztery flagi muszą się zgadzać, żeby token przeszedł weryfikację.
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -39,18 +36,18 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
+        // Ten sam klucz co przy podpisywaniu - niezgodność = odrzucenie tokenu.
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
     };
 });
 
-// RBAC Authorization Policies
+// Rejestracja polityk RBAC (AdminOnly, StaffOrAdmin, AuthenticatedUser)
 builder.Services.AddHotelAuthorizationPolicies();
 
-// Digital Signature Service
+// Singleton - jeden klucz RSA na całą sesję. Po restarcie wcześniejsze podpisy stają się nieweryfikowalne.
 builder.Services.AddSingleton<DigitalSignatureService>();
 
-// Add API Explorer and Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -61,7 +58,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API for managing hotel reservations, guests, rooms, and services. Secured with JWT + RBAC."
     });
 
-    // Add JWT Bearer support in Swagger UI
+    // Obsługa JWT w Swagger UI - można testować chronione endpointy bez Postmana.
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -88,9 +85,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// CORS — konfiguracja deweloperska: zezwala na żądania z każdej domeny.
-// W środowisku produkcyjnym należy ograniczyć do konkretnej domeny frontendu,
-// np.: policy.WithOrigins("https://moja-domena.pl").AllowAnyHeader().AllowAnyMethod();
+// CORS otwarty na wszystkie domeny - tylko dla lokalnego developmentu.
+// Przed produkcją zmienić na WithOrigins("https://konkretna-domena.pl")
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
@@ -103,15 +99,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
+    // Nieobsłużone wyjątki trafiają na /Error - stack trace nie wychodzi do klienta.
     app.UseExceptionHandler("/Error");
+    // HSTS - przeglądarka wymusza HTTPS przez określony czas.
     app.UseHsts();
 }
 
-// Swagger UI — dostępny TYLKO w środowisku deweloperskim (development).
-// W produkcji ten blok nie jest uruchamiany, więc dokumentacja API nie jest publicznie dostępna.
+// Swagger tylko w trybie deweloperskim - w produkcji dokumentacja nie jest dostępna.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -122,13 +118,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Wymusza HTTPS - przeglądarka musi używać bezpiecznego połączenia.
 app.UseHttpsRedirection();
 
 app.UseRouting();
 
 app.UseCors();
 
-// Authentication & Authorization middleware (must be after UseRouting, before MapEndpoints)
+// Ważna kolejność: Authentication przed Authorization.
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -136,7 +133,6 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
-// Map API endpoints
 app.MapAuthEndpoints();
 app.MapGuestEndpoints();
 app.MapRoomTypeEndpoints();

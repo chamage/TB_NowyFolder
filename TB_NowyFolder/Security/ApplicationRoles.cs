@@ -1,8 +1,6 @@
 namespace TB_NowyFolder.Security;
 
-/// <summary>
-/// Defines the application roles for RBAC.
-/// </summary>
+// Stałe z nazwami ról - używane w atrybutach autoryzacji i przy generowaniu tokenów JWT.
 public static class ApplicationRoles
 {
     public const string Administrator = "Administrator";

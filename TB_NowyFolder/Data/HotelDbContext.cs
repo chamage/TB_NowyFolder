@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TB_NowyFolder.Data;
 using TB_NowyFolder.Models;
 
 namespace TB_NowyFolder.Data;
@@ -22,25 +23,26 @@ public class HotelDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure composite keys
+        // Ustawienie kluczy złożonych - EF Core nie wywnioskuje ich automatycznie.
         modelBuilder.Entity<ReservationRoom>()
             .HasKey(rr => new { rr.ReservationID, rr.RoomID });
 
         modelBuilder.Entity<ReservationService>()
             .HasKey(rs => new { rs.ReservationID, rs.ServiceID, rs.ServiceDate });
 
-        // Configure User unique index
+        // Unikalny indeks na Username - baza odrzuci duplikat przy próbie rejestracji.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();
 
-        // Seed some initial data
+        // Dane seedowe - typy pokoi, pokoje, usługi i goście demo wgrywane przez migracje EF Core.
         modelBuilder.Entity<RoomType>().HasData(
             new RoomType { RoomTypeID = 1, TypeName = "Single", Description = "Single room with one bed", Standard = "Standard" },
             new RoomType { RoomTypeID = 2, TypeName = "Double", Description = "Double room with two beds", Standard = "Standard" },
             new RoomType { RoomTypeID = 3, TypeName = "Suite", Description = "Luxury suite with living area", Standard = "Luxury" }
         );
 
+        // Pokoje demo
         modelBuilder.Entity<Room>().HasData(
             new Room { RoomID = 1, RoomTypeID = 1, RoomNumber = "101", Capacity = 1, PricePerNight = 100m, Status = "Available" },
             new Room { RoomID = 2, RoomTypeID = 1, RoomNumber = "102", Capacity = 1, PricePerNight = 100m, Status = "Available" },
@@ -49,6 +51,7 @@ public class HotelDbContext : DbContext
             new Room { RoomID = 5, RoomTypeID = 3, RoomNumber = "301", Capacity = 4, PricePerNight = 300m, Status = "Available" }
         );
 
+        // Usługi demo
         modelBuilder.Entity<Service>().HasData(
             new Service { ServiceID = 1, ServiceName = "Breakfast", Description = "Continental breakfast", UnitPrice = 15m, Availability = "Available" },
             new Service { ServiceID = 2, ServiceName = "Room Service", Description = "24/7 room service", UnitPrice = 25m, Availability = "Available" },
@@ -56,21 +59,19 @@ public class HotelDbContext : DbContext
             new Service { ServiceID = 4, ServiceName = "Airport Transfer", Description = "Transportation to/from airport", UnitPrice = 50m, Availability = "Available" }
         );
 
+        // Goście demo
         modelBuilder.Entity<Guest>().HasData(
             new Guest { GuestID = 1, FirstName = "John", LastName = "Doe", Email = "john.doe@example.com", Phone = "123-456-7890" },
             new Guest { GuestID = 2, FirstName = "Jane", LastName = "Smith", Email = "jane.smith@example.com", Phone = "098-765-4321" }
         );
 
-        // ============================================================
-        // SEED DATA — konta testowe do demonstracji aplikacji
-        // Hasła w postaci hashów PBKDF2 (ASP.NET Core Identity PasswordHasher)
+        // Konta testowe - hasła jako hasze PBKDF2, nie w postaci jawnej.
+        // HasData() nie obsługuje IConfiguration, więc hasze są na stałe w kodzie.
+        // W produkcji ten seed należy usunąć.
         //
         //   admin      / hasło: Admin123!
         //   reception  / hasło: Reception123!
         //   client     / hasło: Client123!
-        //
-        // UWAGA: W produkcji należy usunąć seed lub zmienić hasła przed deploymentem.
-        // ============================================================
         modelBuilder.Entity<User>().HasData(
             new User { UserID = 1, Username = "admin", PasswordHash = "AQAAAAIAAYagAAAAEDIxCxLk7cO67wzbcIxZEhSNWwO3N7OB3apVA/gpSSaDEx9E2cO0kFL8kaMZmlw3qA==", Role = Security.ApplicationRoles.Administrator },
             new User { UserID = 2, Username = "reception", PasswordHash = "AQAAAAIAAYagAAAAEML12Nj+jhhywZ/TBEuyFOCAoQWcbiIiZXnp8fkBYkYBdViiElzI/uHC6vI3OqpAHA==", Role = Security.ApplicationRoles.Receptionist },
