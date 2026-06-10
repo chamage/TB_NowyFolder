@@ -73,6 +73,16 @@
 
 @section Scripts {
     <script>
+        function showVdToast(msg, type = 'info') {
+            const c = document.getElementById('toast-container');
+            if (!c) return;
+            const el = document.createElement('div');
+            el.className = 'toast-item toast-' + type;
+            el.textContent = msg;
+            c.appendChild(el);
+            setTimeout(() => el.remove(), 3600);
+        }
+
         (function enforceAccessControl() {
             try {
                 let authUser = JSON.parse(localStorage.getItem('authUser'));
@@ -116,15 +126,15 @@
                     document.getElementById("genSignature").value = data.signature;
                     document.getElementById("generatedResult").classList.remove("d-none");
                 } else if (response.status === 401 || response.status === 403) {
-                    alert('Brak uprawnień. Zaloguj się jako administrator.');
+                    showVdToast('Brak uprawnień. Zaloguj się jako administrator.', 'error');
                 } else if(response.status === 404) {
-                    alert('Nie znaleziono rezerwacji o podanym ID.');
+                    showVdToast('Nie znaleziono rezerwacji o podanym ID.', 'warning');
                 } else {
-                    alert('Wystąpił błąd podczas generowania dokumentu.');
+                    showVdToast('Wystąpił błąd podczas generowania dokumentu.', 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert("Błąd połączenia z serwerem.");
+                showVdToast('Błąd połączenia z serwerem.', 'error');
             }
         }
 
@@ -133,7 +143,7 @@
             var signature = document.getElementById("verifySignature").value;
 
             if(!payload || !signature) {
-                alert('Proszę wypełnić oba pola.');
+                showVdToast('Proszę wypełnić oba pola.', 'warning');
                 return;
             }
 
@@ -157,13 +167,13 @@
                         resultBox.classList.add("bg-danger", "text-white");
                     }
                 } else if (response.status === 401 || response.status === 403) {
-                    alert('Brak uprawnień. Zaloguj się jako administrator.');
+                    showVdToast('Brak uprawnień. Zaloguj się jako administrator.', 'error');
                 } else {
-                    alert('Wystąpił błąd weryfikacji po stronie serwera.');
+                    showVdToast('Wystąpił błąd weryfikacji po stronie serwera.', 'error');
                 }
             } catch (e) {
                 console.error(e);
-                alert("Błąd połączenia z serwerem.");
+                showVdToast('Błąd połączenia z serwerem.', 'error');
             }
         }
     </script>

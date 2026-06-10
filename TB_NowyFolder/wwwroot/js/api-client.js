@@ -1,4 +1,4 @@
-// ═══ Hotel Reservation — API Client ═══
+﻿// ═══ Hotel Reservation - API Client ═══
 const apiBaseUrl = '/api';
 let guests = [], rooms = [], services = [], reservations = [];
 let authToken = localStorage.getItem('authToken') || '';
@@ -18,6 +18,17 @@ function showToast(msg, type = 'info') {
     const el = document.createElement('div');
     el.className = 'toast-item toast-' + type; el.textContent = msg;
     c.appendChild(el); setTimeout(() => el.remove(), 3600);
+}
+
+// ── Confirm Modal ──
+function showConfirmModal(msg, onConfirm, title = 'Confirm') {
+    $('#confirmModalTitle').text(title);
+    $('#confirmModalMessage').text(msg);
+    $('#confirmModalOk').off('click').on('click', function () {
+        bootstrap.Modal.getInstance('#confirmModal').hide();
+        onConfirm();
+    });
+    new bootstrap.Modal('#confirmModal').show();
 }
 
 // ── Auth helpers ──
@@ -221,7 +232,7 @@ function loadDashboardData() {
         } else {
             const sorted = [...reservations].sort((a,b) => b.reservationID - a.reservationID).slice(0, 5);
             sorted.forEach(r => {
-                const gn = r.guest ? r.guest.firstName + ' ' + r.guest.lastName : '—';
+                const gn = r.guest ? r.guest.firstName + ' ' + r.guest.lastName : '-';
                 h += `<tr><td>#${r.reservationID}</td><td>${gn}</td><td>${badge(r.reservationStatus)}</td><td>${fmt$(r.totalPrice)}</td></tr>`;
             });
         }
@@ -247,7 +258,7 @@ function loadGuests() {
             guests=data;
             let h='<table class="table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th></th></tr></thead><tbody>';
             if (!data.length) h+='<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No guests yet</td></tr>';
-            else data.forEach(g=>{h+=`<tr><td>${g.guestID}</td><td>${g.firstName} ${g.lastName}</td><td>${g.email}</td><td>${g.phone||'—'}</td><td><button class="btn-danger-sm" onclick="deleteGuest(${g.guestID})">Remove</button></td></tr>`;});
+            else data.forEach(g=>{h+=`<tr><td>${g.guestID}</td><td>${g.firstName} ${g.lastName}</td><td>${g.email}</td><td>${g.phone||'-'}</td><td><button class="btn-danger-sm" onclick="deleteGuest(${g.guestID})">Remove</button></td></tr>`;});
             h+='</tbody></table>'; $('#guests-list').html(h); updateGuestSelect();
         },
         error(xhr){$('#guests-list').html('<div class="alert alert-warning">Not available for this role.</div>');handleApiError(xhr);}
@@ -262,9 +273,12 @@ function createGuest(){
     });
 }
 function deleteGuest(id){
-    if(!confirm('Remove this guest?'))return;
-    $.ajax({url:apiBaseUrl+'/guests/'+id,type:'DELETE',headers:authHeaders(),
-        success(){loadGuests();showToast('Guest removed.','success');},error(xhr){handleApiError(xhr);}});
+    showConfirmModal('Remove this guest from the system?', function() {
+        $.ajax({url:apiBaseUrl+'/guests/'+id,type:'DELETE',headers:authHeaders(),
+            success(){loadGuests();showToast('Guest removed.','success');},
+            error(xhr){handleApiError(xhr);}
+        });
+    }, 'Remove Guest');
 }
 
 // ── Rooms ──
@@ -314,8 +328,8 @@ function showRoomDetails(id){
         ${badge(r.status)}
         <hr style="border-color:var(--border-light);margin:1rem 0">
         <p style="margin:0;line-height:2">
-            <strong style="color:var(--text-muted)">Type</strong>&ensp;${r.roomType?r.roomType.typeName:'—'}<br>
-            <strong style="color:var(--text-muted)">Standard</strong>&ensp;${r.roomType?r.roomType.standard:'—'}<br>
+            <strong style="color:var(--text-muted)">Type</strong>&ensp;${r.roomType?r.roomType.typeName:'-'}<br>
+            <strong style="color:var(--text-muted)">Standard</strong>&ensp;${r.roomType?r.roomType.standard:'-'}<br>
             <strong style="color:var(--text-muted)">Capacity</strong>&ensp;${r.capacity} guests<br>
             <strong style="color:var(--text-muted)">Rate</strong>&ensp;${fmt$(r.pricePerNight)} / night
         </p>
@@ -325,7 +339,7 @@ function showRoomDetails(id){
     new bootstrap.Modal('#roomDetailsModal').show();
 }
 function showAddRoomModal(){
-    $.ajax({url:apiBaseUrl+'/roomtypes',headers:authHeaders(),success(d){const s=$('#roomTypeSelect');s.empty().append('<option value="">Select type…</option>');d.forEach(t=>s.append(`<option value="${t.roomTypeID}">${t.typeName} — ${t.standard}</option>`));}});
+    $.ajax({url:apiBaseUrl+'/roomtypes',headers:authHeaders(),success(d){const s=$('#roomTypeSelect');s.empty().append('<option value="">Select type…</option>');d.forEach(t=>s.append(`<option value="${t.roomTypeID}">${t.typeName} - ${t.standard}</option>`));}});
     $('#addRoomForm')[0].reset();new bootstrap.Modal('#addRoomModal').show();
 }
 function createRoom(){
@@ -392,9 +406,9 @@ function loadReservations(){
             let h='<table class="table"><thead><tr><th>#</th><th>Guest</th><th>Stay</th><th>Rooms</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody>';
             if(!data.length)h+='<tr><td colspan="7" style="text-align:center;color:var(--text-muted)">No reservations</td></tr>';
             else data.forEach(r=>{
-                const gn=r.guest?r.guest.firstName+' '+r.guest.lastName:'—';
+                const gn=r.guest?r.guest.firstName+' '+r.guest.lastName:'-';
                 const rc=r.reservationRooms?r.reservationRooms.length:0;
-                h+=`<tr class="clickable-row" onclick="showReservationDetails(${r.reservationID},event)"><td>${r.reservationID}</td><td>${gn}</td><td>${fmtDate(r.checkInDate)} — ${fmtDate(r.checkOutDate)}</td><td>${rc}</td><td>${fmt$(r.totalPrice)}</td><td>${badge(r.reservationStatus)}</td><td><button class="btn-icon" onclick="showAddRoomToReservation(${r.reservationID},event)" title="Add room">🛏</button> <button class="btn-icon" onclick="showAddServiceToReservation(${r.reservationID},event)" title="Add service">🍽</button> <button class="btn-danger-sm" onclick="deleteReservation(${r.reservationID},event)" style="font-size:.72rem;padding:.25rem .55rem">✕</button></td></tr>`;
+                h+=`<tr class="clickable-row" onclick="showReservationDetails(${r.reservationID},event)"><td>${r.reservationID}</td><td>${gn}</td><td>${fmtDate(r.checkInDate)} - ${fmtDate(r.checkOutDate)}</td><td>${rc}</td><td>${fmt$(r.totalPrice)}</td><td>${badge(r.reservationStatus)}</td><td><button class="btn-icon" onclick="showAddRoomToReservation(${r.reservationID},event)" title="Add room">🛏</button> <button class="btn-icon" onclick="showAddServiceToReservation(${r.reservationID},event)" title="Add service">🍽</button> <button class="btn-danger-sm" onclick="deleteReservation(${r.reservationID},event)" style="font-size:.72rem;padding:.25rem .55rem">✕</button></td></tr>`;
             });
             h+='</tbody></table>';$('#reservations-list').html(h);
         },
@@ -405,21 +419,25 @@ function loadReservations(){
 function showReservationDetails(id,ev){
     if(ev&&(ev.target.tagName==='BUTTON'||ev.target.closest('button')))return;
     const r=reservations.find(x=>x.reservationID===id);if(!r)return;
-    let h=`<div class="row mb-3"><div class="col-md-6"><h6 style="color:var(--gold);font-family:var(--serif)">Guest</h6><p style="line-height:1.9"><strong style="color:var(--text-muted)">Name</strong>&ensp;${r.guest?r.guest.firstName+' '+r.guest.lastName:'—'}<br><strong style="color:var(--text-muted)">Email</strong>&ensp;${r.guest?r.guest.email:'—'}<br><strong style="color:var(--text-muted)">Phone</strong>&ensp;${r.guest?r.guest.phone||'—':'—'}</p></div><div class="col-md-6"><h6 style="color:var(--gold);font-family:var(--serif)">Booking</h6><p style="line-height:1.9"><strong style="color:var(--text-muted)">ID</strong>&ensp;#${r.reservationID}<br><strong style="color:var(--text-muted)">Stay</strong>&ensp;${fmtDate(r.checkInDate)} — ${fmtDate(r.checkOutDate)}<br><strong style="color:var(--text-muted)">Status</strong>&ensp;${r.reservationStatus}<br><strong style="color:var(--text-muted)">Total</strong>&ensp;${fmt$(r.totalPrice)}</p></div></div>`;
+    let h=`<div class="row mb-3"><div class="col-md-6"><h6 style="color:var(--gold);font-family:var(--serif)">Guest</h6><p style="line-height:1.9"><strong style="color:var(--text-muted)">Name</strong>&ensp;${r.guest?r.guest.firstName+' '+r.guest.lastName:'-'}<br><strong style="color:var(--text-muted)">Email</strong>&ensp;${r.guest?r.guest.email:'-'}<br><strong style="color:var(--text-muted)">Phone</strong>&ensp;${r.guest?r.guest.phone||'-':'-'}</p></div><div class="col-md-6"><h6 style="color:var(--gold);font-family:var(--serif)">Booking</h6><p style="line-height:1.9"><strong style="color:var(--text-muted)">ID</strong>&ensp;#${r.reservationID}<br><strong style="color:var(--text-muted)">Stay</strong>&ensp;${fmtDate(r.checkInDate)} - ${fmtDate(r.checkOutDate)}<br><strong style="color:var(--text-muted)">Status</strong>&ensp;${r.reservationStatus}<br><strong style="color:var(--text-muted)">Total</strong>&ensp;${fmt$(r.totalPrice)}</p></div></div>`;
     h+='<h6 style="color:var(--gold);font-family:var(--serif)">Rooms</h6><table class="table"><thead><tr><th>No.</th><th>Type</th><th>Rate</th></tr></thead><tbody>';
-    if(r.reservationRooms&&r.reservationRooms.length) r.reservationRooms.forEach(rr=>{h+=`<tr><td>${rr.room?rr.room.roomNumber:'—'}</td><td>${rr.room&&rr.room.roomType?rr.room.roomType.typeName:'—'}</td><td>${fmt$(rr.pricePerNight)}</td></tr>`;});
+    if(r.reservationRooms&&r.reservationRooms.length) r.reservationRooms.forEach(rr=>{h+=`<tr><td>${rr.room?rr.room.roomNumber:'-'}</td><td>${rr.room&&rr.room.roomType?rr.room.roomType.typeName:'-'}</td><td>${fmt$(rr.pricePerNight)}</td></tr>`;});
     else h+='<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">None assigned</td></tr>';
     h+='</tbody></table><h6 style="color:var(--gold);font-family:var(--serif)">Services</h6><table class="table"><thead><tr><th>Service</th><th>Date</th><th>Qty</th><th>Price</th></tr></thead><tbody>';
-    if(r.reservationServices&&r.reservationServices.length) r.reservationServices.forEach(rs=>{h+=`<tr><td>${rs.service?rs.service.serviceName:'—'}</td><td>${fmtDate(rs.serviceDate)}</td><td>${rs.quantity}</td><td>${rs.service?fmt$(rs.service.unitPrice):'—'}</td></tr>`;});
+    if(r.reservationServices&&r.reservationServices.length) r.reservationServices.forEach(rs=>{h+=`<tr><td>${rs.service?rs.service.serviceName:'-'}</td><td>${fmtDate(rs.serviceDate)}</td><td>${rs.quantity}</td><td>${rs.service?fmt$(rs.service.unitPrice):'-'}</td></tr>`;});
     else h+='<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">None</td></tr>';
     $('#reservationDetailsContent').html(h+'</tbody></table>');
     new bootstrap.Modal('#reservationDetailsModal').show();
 }
 
 function deleteReservation(id,ev){
-    if(ev)ev.stopPropagation();if(!confirm('Delete this reservation?'))return;
-    $.ajax({url:apiBaseUrl+'/reservations/'+id,type:'DELETE',headers:authHeaders(),
-        success(){loadReservations();showToast('Reservation deleted.','success');},error(xhr){handleApiError(xhr);}});
+    if(ev)ev.stopPropagation();
+    showConfirmModal('Delete this reservation? This cannot be undone.', function() {
+        $.ajax({url:apiBaseUrl+'/reservations/'+id,type:'DELETE',headers:authHeaders(),
+            success(){loadReservations();showToast('Reservation deleted.','success');},
+            error(xhr){handleApiError(xhr);}
+        });
+    }, 'Delete Reservation');
 }
 
 function updateGuestSelect(){
@@ -446,12 +464,12 @@ function showAddReservationModal(preselectedRoomId){
             sr.empty().append('<option value="">Select a room…</option>');
             availableRooms.forEach(r => {
                 const selectedAttr = (preselectedRoomId && r.roomID === preselectedRoomId) ? 'selected' : '';
-                sr.append(`<option value="${r.roomID}" ${selectedAttr}>Room ${r.roomNumber} — ${r.roomType ? r.roomType.typeName : 'Standard'} (${fmt$(r.pricePerNight)}/night)</option>`);
+                sr.append(`<option value="${r.roomID}" ${selectedAttr}>Room ${r.roomNumber} - ${r.roomType ? r.roomType.typeName : 'Standard'} (${fmt$(r.pricePerNight)}/night)</option>`);
             });
             if (preselectedRoomId && !availableRooms.find(r => r.roomID === preselectedRoomId)) {
                 const room = rooms.find(r => r.roomID === preselectedRoomId);
                 if (room) {
-                    sr.append(`<option value="${room.roomID}" selected>Room ${room.roomNumber} — ${room.roomType ? room.roomType.typeName : 'Standard'} (${fmt$(room.pricePerNight)}/night) [Currently ${room.status}]</option>`);
+                    sr.append(`<option value="${room.roomID}" selected>Room ${room.roomNumber} - ${room.roomType ? room.roomType.typeName : 'Standard'} (${fmt$(room.pricePerNight)}/night) [Currently ${room.status}]</option>`);
                 }
             }
         },
@@ -514,7 +532,7 @@ function createReservation(){
 function showAddRoomToReservation(rid,ev){
     if(ev)ev.stopPropagation();$('#roomReservationId').val(rid);
     $.ajax({url:apiBaseUrl+'/rooms/available',headers:authHeaders(),
-        success(d){const s=$('#roomSelect');s.empty().append('<option value="">Select room…</option>');d.forEach(r=>s.append(`<option value="${r.roomID}">${r.roomNumber} — ${r.roomType?r.roomType.typeName:''} (${fmt$(r.pricePerNight)})</option>`));new bootstrap.Modal('#addRoomToReservationModal').show();},
+        success(d){const s=$('#roomSelect');s.empty().append('<option value="">Select room…</option>');d.forEach(r=>s.append(`<option value="${r.roomID}">${r.roomNumber} - ${r.roomType?r.roomType.typeName:''} (${fmt$(r.pricePerNight)})</option>`));new bootstrap.Modal('#addRoomToReservationModal').show();},
         error(xhr){handleApiError(xhr);}
     });
 }
@@ -599,3 +617,4 @@ function loadWeather() {
         }
     });
 }
+

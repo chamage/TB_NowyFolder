@@ -27,9 +27,9 @@ Demo accounts:
 
 | Username | Password | Role |
 |---|---|---|
-| `admin` | `Admin123!` | Administrator |
-| `reception` | `Reception123!` | Receptionist |
-| `client` | `Client123!` | Client |
+| `admin` | `admin123!` | Administrator |
+| `reception` | `reception123!` | Receptionist |
+| `client` | `client123!` | Client |
 
 ## Running the Application
 

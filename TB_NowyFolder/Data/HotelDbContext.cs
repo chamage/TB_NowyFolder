@@ -69,9 +69,9 @@ public class HotelDbContext : DbContext
         // HasData() nie obsługuje IConfiguration, więc hasze są na stałe w kodzie.
         // W produkcji ten seed należy usunąć.
         //
-        //   admin      / hasło: Admin123!
-        //   reception  / hasło: Reception123!
-        //   client     / hasło: Client123!
+        //   admin      / hasło: admin123!
+        //   reception  / hasło: reception123!
+        //   client     / hasło: client123!
         modelBuilder.Entity<User>().HasData(
             new User { UserID = 1, Username = "admin", PasswordHash = "AQAAAAIAAYagAAAAEDIxCxLk7cO67wzbcIxZEhSNWwO3N7OB3apVA/gpSSaDEx9E2cO0kFL8kaMZmlw3qA==", Role = Security.ApplicationRoles.Administrator },
             new User { UserID = 2, Username = "reception", PasswordHash = "AQAAAAIAAYagAAAAEML12Nj+jhhywZ/TBEuyFOCAoQWcbiIiZXnp8fkBYkYBdViiElzI/uHC6vI3OqpAHA==", Role = Security.ApplicationRoles.Receptionist },

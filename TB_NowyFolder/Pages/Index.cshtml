@@ -1,4 +1,4 @@
-@page
+﻿@page
 @model IndexModel
 @{
     ViewData["Title"] = "Reservation Management";
@@ -8,8 +8,8 @@
 <div class="hotel-hero">
     <!-- Weather Widget -->
     <div class="weather-widget-glass d-none" id="weather-widget" title="Local Weather in Krosno">
-        <span class="weather-icon" id="weather-icon">☀️</span>
-        <span class="weather-temp" id="weather-temp">--°C</span>
+        <span class="weather-icon" id="weather-icon">â€ď¸Ź</span>
+        <span class="weather-temp" id="weather-temp">--Â°C</span>
         <span class="weather-desc" id="weather-desc">Loading...</span>
     </div>
     <div class="hotel-hero-overlay"></div>
@@ -82,8 +82,8 @@
     <div class="d-none" id="auth-logged-in-panel">
         <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:.75rem">
             <div style="display:flex;align-items:center;gap:.75rem">
-                <span class="user-pill" id="auth-username-display">—</span>
-                <span class="role-pill" id="auth-role-display">—</span>
+                <span class="user-pill" id="auth-username-display">â€”</span>
+                <span class="role-pill" id="auth-role-display">â€”</span>
             </div>
             <button class="btn-danger-sm" onclick="logout()">Sign Out</button>
         </div>
@@ -172,7 +172,7 @@
             <button class="btn-gold" id="btn-add-guest" onclick="showAddGuestModal()">+ New Guest</button>
         </div>
         <div id="guests-list" class="table-responsive">
-            <p class="loading-pulse">Loading guests…</p>
+            <p class="loading-pulse">Loading guestsâ€¦</p>
         </div>
     </div>
 
@@ -187,7 +187,7 @@
             </div>
         </div>
         <div id="rooms-list" class="room-card-grid">
-            <p class="loading-pulse">Loading rooms…</p>
+            <p class="loading-pulse">Loading roomsâ€¦</p>
         </div>
     </div>
 
@@ -198,7 +198,7 @@
             <button class="btn-gold" id="btn-add-service" onclick="showAddServiceModal()">+ New Service</button>
         </div>
         <div id="services-list" class="service-card-grid">
-            <p class="loading-pulse">Loading services…</p>
+            <p class="loading-pulse">Loading servicesâ€¦</p>
         </div>
     </div>
 
@@ -209,43 +209,43 @@
             <button class="btn-gold" id="btn-add-reservation" onclick="showAddReservationModal()">+ New Booking</button>
         </div>
         <div id="reservations-list" class="table-responsive">
-            <p class="loading-pulse">Loading reservations…</p>
+            <p class="loading-pulse">Loading reservationsâ€¦</p>
         </div>
     </div>
 </div>
 
-<!-- ══ Modals ══ -->
+<!-- â•â• Modals â•â• -->
 
 <!-- Room Details -->
 <div class="modal fade" id="roomDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Room Details</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body"><div id="roomDetailsContent">Loading…</div></div>
+        <div class="modal-body"><div id="roomDetailsContent">Loadingâ€¦</div></div>
     </div></div>
 </div>
 
 <!-- Service Details -->
 <div class="modal fade" id="serviceDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Service Details</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body"><div id="serviceDetailsContent">Loading…</div></div>
+        <div class="modal-body"><div id="serviceDetailsContent">Loadingâ€¦</div></div>
     </div></div>
 </div>
 
 <!-- Reservation Details -->
 <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg"><div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Reservation Details</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body"><div id="reservationDetailsContent">Loading…</div></div>
+        <div class="modal-body"><div id="reservationDetailsContent">Loadingâ€¦</div></div>
         <div class="modal-footer">
             <button type="button" class="btn-outline" data-bs-dismiss="modal">Close</button>
         </div>
@@ -254,7 +254,7 @@
 
 <!-- Add Guest -->
 <div class="modal fade" id="addGuestModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">New Guest</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -276,7 +276,7 @@
 
 <!-- Add Reservation -->
 <div class="modal fade" id="addReservationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">New Booking</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -284,10 +284,10 @@
         <div class="modal-body">
             <form id="addReservationForm">
                 <div class="mb-3"><label class="form-label">Guest</label>
-                    <select class="form-select" name="guestID" id="reservationGuestSelect" required><option value="">Select guest…</option></select>
+                    <select class="form-select" name="guestID" id="reservationGuestSelect" required><option value="">Select guestâ€¦</option></select>
                 </div>
                 <div class="mb-3"><label class="form-label">Room</label>
-                    <select class="form-select" name="roomID" id="reservationRoomSelect" required><option value="">Select room…</option></select>
+                    <select class="form-select" name="roomID" id="reservationRoomSelect" required><option value="">Select roomâ€¦</option></select>
                 </div>
                 <div class="row">
                     <div class="col-md-6 mb-3"><label class="form-label">Check-in</label><input type="date" class="form-control" name="checkInDate" required></div>
@@ -305,7 +305,7 @@
 
 <!-- Add Room -->
 <div class="modal fade" id="addRoomModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">New Room</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -313,7 +313,7 @@
         <div class="modal-body">
             <form id="addRoomForm">
                 <div class="mb-3"><label class="form-label">Room Number</label><input type="text" class="form-control" name="roomNumber" required></div>
-                <div class="mb-3"><label class="form-label">Room Type</label><select class="form-select" name="roomTypeID" id="roomTypeSelect" required><option value="">Loading…</option></select></div>
+                <div class="mb-3"><label class="form-label">Room Type</label><select class="form-select" name="roomTypeID" id="roomTypeSelect" required><option value="">Loadingâ€¦</option></select></div>
                 <div class="mb-3"><label class="form-label">Capacity</label><input type="number" class="form-control" name="capacity" min="1" value="2" required></div>
                 <div class="mb-3"><label class="form-label">Price / Night</label><input type="number" class="form-control" name="pricePerNight" min="0" step="0.01" required></div>
                 <div class="mb-3"><label class="form-label">Status</label><select class="form-select" name="status" required><option value="Available">Available</option><option value="Occupied">Occupied</option><option value="Maintenance">Maintenance</option></select></div>
@@ -328,7 +328,7 @@
 
 <!-- Add Service -->
 <div class="modal fade" id="addServiceModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">New Service</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -350,7 +350,7 @@
 
 <!-- Add Room to Reservation -->
 <div class="modal fade" id="addRoomToReservationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Assign Room</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -358,7 +358,7 @@
         <div class="modal-body">
             <input type="hidden" id="roomReservationId">
             <div class="mb-3"><label class="form-label">Available Room</label>
-                <select class="form-select" id="roomSelect" required><option value="">Loading…</option></select>
+                <select class="form-select" id="roomSelect" required><option value="">Loadingâ€¦</option></select>
                 <div class="form-text">Only available rooms are listed</div>
             </div>
         </div>
@@ -371,14 +371,14 @@
 
 <!-- Add Service to Reservation -->
 <div class="modal fade" id="addServiceToReservationModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog"><div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title">Add Service</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
             <input type="hidden" id="serviceReservationId">
-            <div class="mb-3"><label class="form-label">Service</label><select class="form-select" id="serviceSelect" required><option value="">Loading…</option></select></div>
+            <div class="mb-3"><label class="form-label">Service</label><select class="form-select" id="serviceSelect" required><option value="">Loadingâ€¦</option></select></div>
             <div class="mb-3"><label class="form-label">Quantity</label><input type="number" class="form-control" id="serviceQuantity" value="1" min="1" required></div>
             <div class="mb-3"><label class="form-label">Date</label><input type="date" class="form-control" id="serviceDate" required></div>
         </div>
@@ -387,6 +387,25 @@
             <button type="button" class="btn-gold" onclick="submitAddService()">Add Service</button>
         </div>
     </div></div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">Confirm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage" style="margin:0;color:var(--text)"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmModalOk" class="btn-danger-sm" style="padding:.45rem 1.1rem;font-size:.875rem">Confirm</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

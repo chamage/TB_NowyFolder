@@ -106,7 +106,7 @@ Aplikacja powinna być dostępna pod: `https://localhost:7xxx/`
 
 1. Otwórz `https://localhost:7xxx/swagger` → powinna być dokumentacja API
 2. Otwórz `https://localhost:7xxx/` → powinna być strona główna z loginowaniem
-3. Zaloguj się demo: `admin / Admin123!`
+3. Zaloguj się demo: `admin / admin123!`
 
 ---
 
@@ -138,9 +138,9 @@ dotnet ef database update
 
 ## Konta demo (po zalogowaniu się)
 
-- `admin` / `Admin123!` → Administrator
-- `reception` / `Reception123!` → Receptionist
-- `client` / `Client123!` → Client
+- `admin` / `admin123!` → Administrator
+- `reception` / `reception123!` → Receptionist
+- `client` / `client123!` → Client
 
 ---
 
