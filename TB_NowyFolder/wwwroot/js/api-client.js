@@ -274,6 +274,7 @@ function badge(s) {
 
 /** Pobiera listę gości (tylko dla recepcji/admina). */
 function loadGuests() {
+    $('#guests-list').html('<div style="text-align:center;padding:3rem 0;"><div class="spinner-border" style="color:var(--gold);width:1.5rem;height:1.5rem;" role="status"></div><div class="mt-2" style="color:var(--text-muted);font-size:0.85rem;">Loading guests...</div></div>');
     $.ajax({ url:apiBaseUrl+'/guests', headers:authHeaders(),
         success(data) {
             guests=data;
@@ -310,6 +311,7 @@ function deleteGuest(id){
 
 // Pobiera i renderuje karty z pokojami.
 function loadRooms(avail){
+    $('#rooms-list').html('<div style="grid-column:1/-1;text-align:center;padding:4rem 0;"><div class="spinner-border" style="color:var(--gold)" role="status"></div><div class="mt-3" style="color:var(--text-muted);font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;">Refreshing catalog...</div></div>');
     $.ajax({url:apiBaseUrl+'/rooms'+(avail?'/available':''),headers:authHeaders(),
         success(data){
             rooms=data;
@@ -386,6 +388,7 @@ function createRoom(){
 
 // Pobiera listę wszystkich usług z API.
 function loadServices(){
+    $('#services-list').html('<div style="grid-column:1/-1;text-align:center;padding:4rem 0;"><div class="spinner-border" style="color:var(--gold)" role="status"></div><div class="mt-3" style="color:var(--text-muted);font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;">Loading services...</div></div>');
     $.ajax({url:apiBaseUrl+'/services',headers:authHeaders(),
         success(data){
             services=data;
@@ -440,6 +443,7 @@ function createService(){
 // Pobiera rezerwacje. Klienci widzą tylko swoje.
 function loadReservations(){
     const ep=hasRole('Client')?apiBaseUrl+'/reservations/my':apiBaseUrl+'/reservations';
+    $('#reservations-list').html('<div style="text-align:center;padding:4rem 0;"><div class="spinner-border" style="color:var(--gold)" role="status"></div><div class="mt-3" style="color:var(--text-muted);font-size:0.85rem;">Fetching reservations...</div></div>');
     $.ajax({url:ep,headers:authHeaders(),
         success(data){
             reservations=data;
