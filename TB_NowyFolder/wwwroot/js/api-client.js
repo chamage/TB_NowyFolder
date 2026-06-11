@@ -471,7 +471,7 @@ function showReservationDetails(id,ev){
     h+='</tbody></table><h6 style="color:var(--gold);font-family:var(--serif)">Services</h6><table class="table"><thead><tr><th>Service</th><th>Date</th><th>Qty</th><th>Price</th></tr></thead><tbody>';
     if(r.reservationServices&&r.reservationServices.length) r.reservationServices.forEach(rs=>{h+=`<tr><td>${rs.service?rs.service.serviceName:'-'}</td><td>${fmtDate(rs.serviceDate)}</td><td>${rs.quantity}</td><td>${rs.service?fmt$(rs.service.unitPrice):'-'}</td></tr>`;});
     else h+='<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">None</td></tr>';
-    $('#reservationDetailsContent').html(h+'</tbody></table>');
+    $('#reservationDetailsContent').html(h+'</tbody></table><div class="mt-4 text-end d-print-none"><button class="btn-gold" onclick="window.print()" style="font-size:0.9rem;padding:0.4rem 1.2rem;">Print reservation</button></div>');
     new bootstrap.Modal('#reservationDetailsModal').show();
 }
 

@@ -76,6 +76,35 @@ Zagrożenia rozpoznane przed implementacją:
 | Brak spójności danych | Przerwanie wieloetapowego zapisu w połowie | `SaveChangesAsync()` w EF Core to jedna atomowa transakcja |
 | Nadużycie ról | Klient wykonuje operacje zarezerwowane dla personelu | Polityki autoryzacji przypisane do każdego endpointu |
 
+### 2.5. Dokumentacja endpointów REST API (Model RBAC)
+
+Zgodnie z wymaganiami projektu zabezpieczeń zaimplementowano kontrolę dostępu opartą na rolach (RBAC). Endpointy posiadają rygorystyczne zasady uprawnień.
+
+| Grupa / Endpoint | Metoda HTTP | Rola / Uprawnienia | Opis (Żądanie / Odpowiedź) |
+|---|---|---|---|
+| **Auth** `/api/auth/register` | POST | Publiczny (Brak) | Rejestracja nowego użytkownika i gościa. |
+| **Auth** `/api/auth/login` | POST | Publiczny (Brak) | Logowanie z użyciem loginu i hasła. Zwraca token JWT. |
+| **Auth** `/api/auth/me` | GET | Zalogowany (Dowolna rola) | Zwraca dane aktualnie zalogowanego użytkownika na bazie tokenu. |
+| **Guests** `/api/guests` | GET | StaffOrAdmin | Pobiera listę wszystkich gości. |
+| **Guests** `/api/guests/{id}` | GET | StaffOrAdmin | Pobiera szczegóły konkretnego gościa. |
+| **Guests** `/api/guests/{id}` | PUT, DELETE | AdminOnly | Aktualizacja lub całkowite usunięcie gościa z bazy. |
+| **Rooms** `/api/rooms` | GET | Zalogowany (Dowolna) | Lista wszystkich pokoi. |
+| **Rooms** `/api/rooms/available` | GET | Zalogowany (Dowolna) | Lista aktualnie dostępnych (wolnych) pokoi. |
+| **Rooms** `/api/rooms` | POST, PUT, DELETE | AdminOnly | Zarządzanie pokojami (dodawanie, edycja, usuwanie). |
+| **RoomTypes** `/api/roomtypes` | GET | Zalogowany (Dowolna) | Pobiera listę typów pokoi (np. Standard, Suite). |
+| **RoomTypes** `/api/roomtypes` | POST, PUT, DELETE | AdminOnly | Zarządzanie kategoriami i typami pokoi. |
+| **Services** `/api/services` | GET | Zalogowany (Dowolna) | Pobiera listę dostępnych usług hotelowych. |
+| **Services** `/api/services` | POST, PUT, DELETE | AdminOnly | Zarządzanie cennikiem i listą usług. |
+| **Reservations** `/api/reservations` | GET | StaffOrAdmin | Lista wszystkich rezerwacji w systemie. |
+| **Reservations** `/api/reservations/my` | GET | Zalogowany (Dowolna) | Lista rezerwacji należących do aktualnego użytkownika (Klienta). |
+| **Reservations** `/api/reservations/{id}` | GET | Dowolna (Ochrona IDOR) | Szczegóły rezerwacji. Klient widzi tylko swoje, personel widzi wszystkie. |
+| **Reservations** `/api/reservations` | POST | Zalogowany (Dowolna) | Utworzenie nowej rezerwacji. Zwraca obiekt rezerwacji 201 Created. |
+| **Reservations** `/api/reservations/{id}` | PUT, DELETE | Dowolna (Ochrona IDOR) | Zmiana statusu lub anulowanie rezerwacji. |
+| **Reservations** `.../{id}/rooms` | POST | Dowolna (Ochrona IDOR) | Przypisanie konkretnego pokoju do rezerwacji. |
+| **Reservations** `.../{id}/services` | POST | Dowolna (Ochrona IDOR) | Zamówienie usługi do istniejącej rezerwacji. |
+| **Documents** `/generate/{id}` | GET | Zalogowany (Dowolna) | Pobranie podpisanego cyfrowo (RSA) potwierdzenia rezerwacji. |
+| **Documents** `/verify` | POST | Publiczny (Brak) | Weryfikacja autentyczności pliku potwierdzenia rezerwacji. |
+
 ---
 
 ## 3. Tabela zależności

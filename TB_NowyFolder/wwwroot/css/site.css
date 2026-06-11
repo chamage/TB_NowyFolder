@@ -1107,3 +1107,28 @@ select:disabled,
         display: none;
     }
 }
+
+/* Print View - Reservation Details */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #reservationDetailsModal .modal-content, 
+    #reservationDetailsModal .modal-content * {
+        visibility: visible;
+    }
+    #reservationDetailsModal .modal-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+    }
+    .modal-header .btn-close,
+    .d-print-none {
+        display: none !important;
+    }
+}
