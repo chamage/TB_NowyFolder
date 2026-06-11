@@ -62,11 +62,11 @@ Guest ──< Reservation ──< ReservationRoom >── Room >── RoomType
 User >── Guest (powiązanie opcjonalne - klient ma przypisanego gościa)
 ```
 
-### 2.4. Potencjalne zagrożenia
+### 2.4. Potencjalne zagrożenia (Threat Models)
 
 Zagrożenia rozpoznane przed implementacją:
 
-| Zagrożenie | Opis | Mitygacja |
+| Zagrożenie | Opis | Przeciwdziałanie |
 |---|---|---|
 | Nieuprawniony dostęp do zasobów | Klient mógłby czytać lub zmieniać cudze rezerwacje | RBAC + walidacja `guestId` z tokenu JWT na poziomie endpointu |
 | Przejęcie tokenu JWT przez XSS | Token w `localStorage` jest dostępny przez JavaScript | Znane ryzyko; w produkcji zalecaną alternatywą jest HttpOnly cookie |
@@ -97,7 +97,7 @@ Zagrożenia rozpoznane przed implementacją:
 
 ---
 
-## 4. Analiza bezpieczeństwa - według OWASP Top 10
+## 4. Analiza bezpieczeństwa - według OWASP Top 10 (2025)
 
 ### 4.1. Kontrola dostępu i role
 
@@ -108,7 +108,7 @@ W projekcie zastosowano RBAC z trzema rolami: Administrator, Recepcjonista, Klie
 - `StaffOrAdmin` - Recepcjonista lub Administrator
 - `AdminOnly` - tylko Administrator
 
-Każdy endpoint ma przypisane konkretne wymagania. Klient może odczytywać i usuwać tylko własne rezerwacje - próba dostępu do cudzej przez `GET /api/reservations/{id}` lub `DELETE /api/reservations/{id}` kończy się `403 Forbidden`:
+Każdy endpoint ma przypisane konkretne wymagania. Klient może odczytywać i usuwać tylko własne rezerwacje - próba dostępu do cudzej przez `GET /api/reservations/{id}` lub `DELETE /api/reservations/{id}` kończy się `403 Forbidden` (fragment pliku `ReservationEndpoints.cs`):
 
 ```csharp
 if (user.IsInRole(ApplicationRoles.Client))
@@ -119,7 +119,7 @@ if (user.IsInRole(ApplicationRoles.Client))
 }
 ```
 
-Klient tworzący rezerwację ma nadpisywane `GuestID` wartością z tokenu - zapobiega to podmienieniu właściciela rezerwacji (IDOR). Dodawanie pokójów i usług do rezerwacji jest ograniczone do `StaffOrAdmin` - klient nie może modyfikować cudzych rezerwacji przez te endpointy.
+Klient tworzący rezerwację ma nadpisywane `GuestID` wartością z tokenu - zapobiega to podmienieniu właściciela rezerwacji (IDOR). Dodawanie pokojów i usług do rezerwacji jest ograniczone do `StaffOrAdmin` - klient nie może modyfikować cudzych rezerwacji przez te endpointy.
 
 **Ograniczenia:** brak stronicowania na listach - `GET /api/reservations` zwraca wszystkie rekordy naraz.
 
@@ -163,7 +163,7 @@ Szczegółowy opis w sekcji 6. W skrócie: walidacja po stronie frontendu można
 
 *(OWASP A03:2021 - Injection)*
 
-Zapytania do bazy są realizowane przez EF Core z LINQ (`FindAsync`, `FirstOrDefaultAsync`, `Where`). EF Core generuje zapytania parametryzowane - dane użytkownika nie są wklejane bezpośrednio do SQL, co ogranicza ryzyko SQL Injection.
+Zapytania do bazy są realizowane przez EF Core z LINQ (`FindAsync`, `FirstOrDefaultAsync`, `Where`). EF Core generuje zapytania parametryzowane - dane użytkownika nie są wklejane bezpośrednio do SQL, co ogranicza ryzyko SQL Injection (przykład z weryfikacji logowania w `AuthEndpoints.cs`):
 
 ```csharp
 var user = await db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
@@ -188,7 +188,7 @@ Ryzyko wzrasta przy użyciu `ExecuteSqlRaw()` - w tym projekcie takie wywołania
 
 ---
 
-### 4.7. Obsługa błędów i sytuacje wyjątkowe
+### 4.7. Obsługa błędów (Mishandling of Exceptional Conditions)
 
 *(OWASP A05:2021 - powiązane)*
 
@@ -245,7 +245,7 @@ Rekomendowany framework: **xUnit** + **Moq**.
 
 W projekcie zastosowano walidację na trzech warstwach:
 
-**Warstwa 1 - frontend (HTML5, JavaScript)**
+**Warstwa 1 - frontend (HTML5, JavaScript - Input Validation Testing)**
 Pola formularzy z typami (`<input type="email">`, `<input type="number" min="1">`) i atrybutem `required`. Cel to poprawa UX i redukcja zbędnych żądań. Warstwa może być całkowicie pominięta przez bezpośrednie wywołania API - nie stanowi zabezpieczenia.
 
 **Warstwa 2 - backend (ASP.NET Core)**
@@ -255,6 +255,8 @@ Atrybuty `DataAnnotations` na modelach (`[Required]`, `[MaxLength]`, `[EmailAddr
 if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
     return Results.BadRequest(new { error = "Username and password are required." });
 ```
+
+Brak walidacji złożoności hasła - rejestracja przyjmuje dowolny ciąg znaków.
 
 **Warstwa 3 - baza danych (SQL Server przez EF Core)**
 Unikalne indeksy (`Username`), klucze kompozytowe (`ReservationRoom`, `ReservationService`), constrainty `NOT NULL` i długości kolumn z modeli. Niespójne dane są odrzucane na poziomie bazy.
@@ -278,7 +280,7 @@ Jeśli operacja się nie powiedzie (np. naruszenie unikalności), EF Core wycofa
 **Właściwości ACID:**
 - **Atomowość:** `SaveChangesAsync()` to jedna niepodzielna operacja.
 - **Spójność:** constrainty bazy odrzucą dane naruszające integralność.
-- **Izolacja:** EF Core stosuje domyślny poziom izolacji SQL Server (Read Committed).
+- **Izolacja:** EF Core stosuje domyślny poziom izolacji SQL Server (Read Committed). Jest to wartość domyślna SQL Server, stosowana automatycznie - nie jest jawnie konfigurowana w kodzie projektu.
 - **Trwałość:** dane zatwierdzone przez SQL Server są zapisywane na dysku.
 
 **Ograniczenie:** tworzenie rezerwacji obejmuje zapis rezerwacji i zmianę statusu pokoju. Oba zapisy trafiają do jednego `SaveChangesAsync()` - to zapewnia atomowość. Przy bardziej złożonych operacjach wymagana byłaby jawna transakcja.
@@ -311,7 +313,7 @@ Sekrety przekazywane przez zmienne środowiskowe:
 ```bash
 docker run -p 8080:8080 \
   -e ConnectionStrings__DefaultConnection="Server=db;..." \
-  -e Jwt__Key="SilnyKluczProdukcyjny" \
+  -e Jwt__Key="SilnyKluczNaProdukcje" \
   hotel-api
 ```
 

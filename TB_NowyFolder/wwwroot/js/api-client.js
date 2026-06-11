@@ -1,4 +1,4 @@
-﻿// ═══ Hotel Reservation - API Client ═══
+// Hotel Reservation - API Client
 const apiBaseUrl = '/api';
 let guests = [], rooms = [], services = [], reservations = [];
 let authToken = localStorage.getItem('authToken') || '';
@@ -12,7 +12,7 @@ $(document).ready(function () {
     loadWeather();
 });
 
-// ── Toast ──
+// Powiadomienie toast w prawym dolnym rogu.
 function showToast(msg, type = 'info') {
     const c = document.getElementById('toast-container'); if (!c) return;
     const el = document.createElement('div');
@@ -20,7 +20,7 @@ function showToast(msg, type = 'info') {
     c.appendChild(el); setTimeout(() => el.remove(), 3600);
 }
 
-// ── Confirm Modal ──
+// Modal z potwierdzeniem (zamiast wbudowanego window.confirm).
 function showConfirmModal(msg, onConfirm, title = 'Confirm') {
     $('#confirmModalTitle').text(title);
     $('#confirmModalMessage').text(msg);
@@ -31,20 +31,32 @@ function showConfirmModal(msg, onConfirm, title = 'Confirm') {
     new bootstrap.Modal('#confirmModal').show();
 }
 
-// ── Auth helpers ──
+// Odczytuje dane z tokena JWT bez zewn. bibliotek.
 function parseJwt(t) { try { return JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))); } catch { return null; } }
+
+// Sprawdza czy zalogowany user ma daną rolę.
 function hasRole(r) { return currentUser && currentUser.role === r; }
+
+// Sprawdza obecność tokena.
 function isAuthenticated() { return !!authToken; }
+
+// Dostęp tylko dla obsługi.
 function canManageGuests() { return hasRole('Receptionist') || hasRole('Administrator'); }
+
+// Dostęp tylko dla admina.
 function canManageCatalogWrite() { return hasRole('Administrator'); }
+
+// Wgląd do rezerwacji (każdy zalogowany).
 function canReadReservations() { return hasRole('Client') || hasRole('Receptionist') || hasRole('Administrator'); }
 function canModifyReservations() { return canReadReservations(); }
 
+// Wypełnia formularz danymi kont demo.
 function fillDemoLogin(type) {
     const c = { admin:['admin','admin123!'], reception:['reception','reception123!'], client:['client','client123!'] };
     if (c[type]) { $('#auth-username').val(c[type][0]); $('#auth-password').val(c[type][1]); }
 }
 
+// Logowanie i zapis JWT.
 function login() {
     const u = $('#auth-username').val().trim(), p = $('#auth-password').val().trim();
     if (!u || !p) { showToast('Please enter credentials.', 'warning'); return; }
@@ -69,6 +81,7 @@ function login() {
     });
 }
 
+// Usunięcie tokena z localStorage.
 function logout() {
     authToken=''; currentUser=null;
     localStorage.removeItem('authToken'); localStorage.removeItem('authUser');
@@ -77,6 +90,7 @@ function logout() {
     updateAuthUI(); applyRbacToUi(); switchTab('rooms');
 }
 
+// Rejestracja nowego usera.
 function register() {
     const u = $('#reg-username').val().trim();
     const p = $('#reg-password').val().trim();
@@ -121,18 +135,21 @@ function register() {
     });
 }
 
+// Przełącza na panel rejestracji.
 function showRegisterPanel(e) {
     if (e) e.preventDefault();
     $('#auth-logged-out-panel').addClass('d-none');
     $('#auth-register-panel').removeClass('d-none');
 }
 
+// Przełącza na panel logowania.
 function showLoginPanel(e) {
     if (e) e.preventDefault();
     $('#auth-register-panel').addClass('d-none');
     $('#auth-logged-out-panel').removeClass('d-none');
 }
 
+// Aktualizuje paski i nazwy użytkownika w zależności od zalogowania.
 function updateAuthUI() {
     if (isAuthenticated() && currentUser) {
         $('#auth-logged-out-panel').addClass('d-none');
@@ -148,14 +165,18 @@ function updateAuthUI() {
     }
 }
 
+// Zwraca header z tokenem.
 function authHeaders() { return authToken ? { Authorization:'Bearer '+authToken } : {}; }
 
+// Globalna obsługa błędów AJAX (toasty).
 function handleApiError(xhr, msg) {
     if (xhr.status===401) { showToast('Authentication required.','warning'); return; }
     if (xhr.status===403) { showToast('Insufficient permissions.','error'); return; }
     showToast(msg || 'Error: '+xhr.status,'error');
 }
 
+
+// Ukrywa/pokazuje taby i przyciski na podstawie ról.
 function applyRbacToUi() {
     const isStaff = hasRole('Receptionist') || hasRole('Administrator');
     const nav = $('#nav-tabs-list');
@@ -181,7 +202,7 @@ function applyRbacToUi() {
     $('#btn-add-reservation').toggle(canModifyReservations());
 }
 
-// ── Navigation ──
+// Przełączanie głównych zakładek SPA.
 function switchTab(name) {
     if (name==='guests' && !canManageGuests()) { showToast('Requires Receptionist or Admin role.','warning'); return; }
     if (name==='reservations' && !canReadReservations()) { showToast('Requires sign-in.','warning'); return; }
@@ -201,7 +222,7 @@ function switchTab(name) {
     })[name]();
 }
 
-// ── Dashboard Data ──
+// Pobiera dane z kilku endpointów na raz i liczy statystyki dashboardu.
 function loadDashboardData() {
     $.when(
         $.ajax({ url: apiBaseUrl + '/rooms', headers: authHeaders() }),
@@ -243,7 +264,7 @@ function loadDashboardData() {
     });
 }
 
-// ── Formatters ──
+// Zwracanie formatu waluty
 function fmt$(a) { return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(a||0); }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : ''; }
 function badge(s) {
@@ -251,7 +272,7 @@ function badge(s) {
     return '<span class="badge-s '+(m[s]||'badge-confirmed')+'">'+s+'</span>';
 }
 
-// ── Guests ──
+/** Pobiera listę gości (tylko dla recepcji/admina). */
 function loadGuests() {
     $.ajax({ url:apiBaseUrl+'/guests', headers:authHeaders(),
         success(data) {
@@ -264,7 +285,11 @@ function loadGuests() {
         error(xhr){$('#guests-list').html('<div class="alert alert-warning">Not available for this role.</div>');handleApiError(xhr);}
     });
 }
+
+// Wyczyść i pokaż modal nowego gościa.
 function showAddGuestModal(){$('#addGuestForm')[0].reset();new bootstrap.Modal('#addGuestModal').show();}
+
+// Zbiera dane z formularza i wysyła POSTa żeby utworzyć gościa.
 function createGuest(){
     const d={firstName:$('#addGuestForm input[name="firstName"]').val(),lastName:$('#addGuestForm input[name="lastName"]').val(),email:$('#addGuestForm input[name="email"]').val(),phone:$('#addGuestForm input[name="phone"]').val()};
     $.ajax({url:apiBaseUrl+'/guests',type:'POST',headers:authHeaders(),contentType:'application/json',data:JSON.stringify(d),
@@ -272,6 +297,8 @@ function createGuest(){
         error(xhr){handleApiError(xhr,'Could not create guest.');}
     });
 }
+
+// Usuwanie gościa po potwierdzeniu.
 function deleteGuest(id){
     showConfirmModal('Remove this guest from the system?', function() {
         $.ajax({url:apiBaseUrl+'/guests/'+id,type:'DELETE',headers:authHeaders(),
@@ -281,7 +308,7 @@ function deleteGuest(id){
     }, 'Remove Guest');
 }
 
-// ── Rooms ──
+// Pobiera i renderuje karty z pokojami.
 function loadRooms(avail){
     $.ajax({url:apiBaseUrl+'/rooms'+(avail?'/available':''),headers:authHeaders(),
         success(data){
@@ -316,6 +343,8 @@ function loadRooms(avail){
         },error(xhr){handleApiError(xhr,'Failed to load rooms.');}
     });
 }
+
+// Pokazuje pełne info o pokoju z wybranym przyciskiem rezerwacji jeśli wolny.
 function showRoomDetails(id){
     const r=rooms.find(x=>x.roomID===id);if(!r)return;
     const isAvail = r.status === 'Available';
@@ -338,10 +367,14 @@ function showRoomDetails(id){
     `);
     new bootstrap.Modal('#roomDetailsModal').show();
 }
+
+// Pokazuje pełne info o pokoju z wybranym przyciskiem rezerwacji jeśli wolny.
 function showAddRoomModal(){
     $.ajax({url:apiBaseUrl+'/roomtypes',headers:authHeaders(),success(d){const s=$('#roomTypeSelect');s.empty().append('<option value="">Select type…</option>');d.forEach(t=>s.append(`<option value="${t.roomTypeID}">${t.typeName} - ${t.standard}</option>`));}});
     $('#addRoomForm')[0].reset();new bootstrap.Modal('#addRoomModal').show();
 }
+
+// Waliduje wpisane dane i dodaje nowy pokój.
 function createRoom(){
     const d={roomNumber:$('#addRoomForm input[name="roomNumber"]').val(),roomTypeID:parseInt($('#addRoomForm select[name="roomTypeID"]').val()),capacity:parseInt($('#addRoomForm input[name="capacity"]').val()),pricePerNight:parseFloat($('#addRoomForm input[name="pricePerNight"]').val()),status:$('#addRoomForm select[name="status"]').val()};
     if(!d.roomTypeID){showToast('Select a room type.','warning');return;}
@@ -351,7 +384,7 @@ function createRoom(){
     });
 }
 
-// ── Services ──
+// Pobiera listę wszystkich usług z API.
 function loadServices(){
     $.ajax({url:apiBaseUrl+'/services',headers:authHeaders(),
         success(data){
@@ -383,12 +416,18 @@ function loadServices(){
         },error(xhr){handleApiError(xhr);}
     });
 }
+
+// Pokazuje modal ze szczegółami wybranej usługi. */
 function showServiceDetails(id){
     const s=services.find(x=>x.serviceID===id);if(!s)return;
     $('#serviceDetailsContent').html(`<h4 style="font-family:var(--serif)">${s.serviceName}</h4><p style="font-size:1.3rem;color:var(--gold);margin:.5rem 0">${fmt$(s.unitPrice)}</p><p><strong style="color:var(--text-muted)">Availability</strong>&ensp;${s.availability}</p><p style="color:var(--text-light)">${s.description||'No description.'}</p>`);
     new bootstrap.Modal('#serviceDetailsModal').show();
 }
+
+// Resetuje i wyświetla formularz dodawania usługi.
 function showAddServiceModal(){$('#addServiceForm')[0].reset();new bootstrap.Modal('#addServiceModal').show();}
+
+// Tworzy nową usługę.
 function createService(){
     const d={serviceName:$('#addServiceForm input[name="serviceName"]').val(),description:$('#addServiceForm textarea[name="description"]').val(),unitPrice:parseFloat($('#addServiceForm input[name="unitPrice"]').val()),availability:$('#addServiceForm select[name="availability"]').val()};
     $.ajax({url:apiBaseUrl+'/services',type:'POST',headers:authHeaders(),contentType:'application/json',data:JSON.stringify(d),
@@ -397,7 +436,8 @@ function createService(){
     });
 }
 
-// ── Reservations ──
+// Rezerwacje
+// Pobiera rezerwacje. Klienci widzą tylko swoje.
 function loadReservations(){
     const ep=hasRole('Client')?apiBaseUrl+'/reservations/my':apiBaseUrl+'/reservations';
     $.ajax({url:ep,headers:authHeaders(),
@@ -416,6 +456,7 @@ function loadReservations(){
     });
 }
 
+// Modal ze szczegółami rezerwacji.
 function showReservationDetails(id,ev){
     if(ev&&(ev.target.tagName==='BUTTON'||ev.target.closest('button')))return;
     const r=reservations.find(x=>x.reservationID===id);if(!r)return;
@@ -430,6 +471,7 @@ function showReservationDetails(id,ev){
     new bootstrap.Modal('#reservationDetailsModal').show();
 }
 
+// Usuwa rezerwację.
 function deleteReservation(id,ev){
     if(ev)ev.stopPropagation();
     showConfirmModal('Delete this reservation? This cannot be undone.', function() {
@@ -440,11 +482,13 @@ function deleteReservation(id,ev){
     }, 'Delete Reservation');
 }
 
+// Uzyskuje listę gości do pola wyboru.
 function updateGuestSelect(){
     const s=$('#reservationGuestSelect');s.empty().append('<option value="">Select guest…</option>');
     guests.forEach(g=>s.append(`<option value="${g.guestID}">${g.firstName} ${g.lastName}</option>`));
 }
 
+// Modal tworzenia rezerwacji. Ładuje wolne pokoje.
 function showAddReservationModal(preselectedRoomId){
     if(!canModifyReservations()){showToast('No permission.','error');return;}
     const s=$('#reservationGuestSelect');s.empty();
@@ -499,6 +543,7 @@ function showAddReservationModal(preselectedRoomId){
     }
 }
 
+// Tworzy rezerwację.
 function createReservation(){
     let gid=$('#reservationGuestSelect').val();
     if(hasRole('Client'))gid=currentUser&&currentUser.guestId?currentUser.guestId:null;
@@ -528,7 +573,7 @@ function createReservation(){
     });
 }
 
-// ── Assign room / service to reservation ──
+// Modal - przypisz pokój.
 function showAddRoomToReservation(rid,ev){
     if(ev)ev.stopPropagation();$('#roomReservationId').val(rid);
     $.ajax({url:apiBaseUrl+'/rooms/available',headers:authHeaders(),
@@ -536,6 +581,8 @@ function showAddRoomToReservation(rid,ev){
         error(xhr){handleApiError(xhr);}
     });
 }
+
+// Przypisuje pokój do rezerwacji.
 function submitAddRoom(){
     const rid=$('#roomReservationId').val(),rmid=$('#roomSelect').val();
     if(!rmid){showToast('Select a room.','warning');return;}
@@ -545,6 +592,7 @@ function submitAddRoom(){
     });
 }
 
+// Modal - zamów usługę.
 function showAddServiceToReservation(rid,ev){
     if(ev)ev.stopPropagation();$('#serviceReservationId').val(rid);
     $('#serviceDate').val(new Date().toISOString().split('T')[0]);
@@ -553,6 +601,8 @@ function showAddServiceToReservation(rid,ev){
         error(xhr){handleApiError(xhr);}
     });
 }
+
+// Zamawia usługę do rezerwacji.
 function submitAddService(){
     const rid=$('#serviceReservationId').val(),sid=$('#serviceSelect').val(),qty=$('#serviceQuantity').val(),dt=$('#serviceDate').val();
     if(!sid||!dt){showToast('Fill all fields.','warning');return;}
@@ -562,7 +612,7 @@ function submitAddService(){
     });
 }
 
-// ── Weather Widget ──
+// Pogoda dla Krosna z Open-Meteo (mapowanie kodów WMO na ikonki).
 function loadWeather() {
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=49.6886&longitude=21.7643&current_weather=true';
     $.ajax({

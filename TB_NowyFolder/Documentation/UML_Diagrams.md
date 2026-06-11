@@ -1,10 +1,10 @@
-# Diagramy UML — System rezerwacji hotelowej
+# Diagramy UML - System rezerwacji hotelowej
 
 Role w systemie:
-1. **Niezalogowany użytkownik** (Gość) — przeglądanie oferty
-2. **Zalogowany użytkownik** (Klient) — samodzielne rezerwacje i zarządzanie kontem
-3. **Recepcjonista** (Obsługa klienta) — obsługa gości na miejscu, zameldowania, rezerwacje telefoniczne, fakturowanie
-4. **Administrator** — pełne zarządzanie systemem (konfiguracja pokoi, usług, cenników)
+1. **Niezalogowany użytkownik** (Gość) - przeglądanie oferty
+2. **Zalogowany użytkownik** (Klient) - samodzielne rezerwacje i zarządzanie kontem
+3. **Recepcjonista** (Obsługa klienta) - obsługa na miejscu, zameldowania, rezerwacje telefoniczne, fakturowanie
+4. **Administrator** - pełne zarządzanie systemem (pokoje, usługi, cenniki)
 
 ---
 
@@ -88,6 +88,15 @@ classDiagram
         +ICollection~Reservation~ Reservations
     }
 
+    class User {
+        +int UserID
+        +string Username
+        +string PasswordHash
+        +string Role
+        +int? GuestID
+        +Guest Guest
+    }
+
     class Reservation {
         +int ReservationID
         +int GuestID
@@ -153,11 +162,12 @@ classDiagram
     Room "1" --> "*" ReservationRoom : przypisany do
     RoomType "1" --> "*" Room : kategoryzuje
     Service "1" --> "*" ReservationService : dotyczy
+    User "0..1" --> "1" Guest : ma profil gościa
 ```
 
 ---
 
-## 3. Diagram aktywności — Przeglądanie oferty (Niezalogowany Użytkownik)
+## 3. Diagram aktywności - Przeglądanie oferty (Niezalogowany użytkownik)
 
 ```mermaid
 flowchart TD
@@ -182,7 +192,7 @@ flowchart TD
 
 ---
 
-## 4. Diagram aktywności — Proces rezerwacji (Zalogowany Użytkownik)
+## 4. Diagram aktywności - Proces rezerwacji (Zalogowany użytkownik)
 
 ```mermaid
 flowchart TD
@@ -203,7 +213,7 @@ flowchart TD
 
 ---
 
-## 5. Diagram aktywności — Zarządzanie pokojami (Administrator)
+## 5. Diagram aktywności - Zarządzanie pokojami (Administrator)
 
 ```mermaid
 flowchart TD
@@ -216,7 +226,7 @@ flowchart TD
     D --> H[Podanie numeru, typu, pojemności, ceny]
     H --> I[Zapis do bazy danych]
     E --> J[Wybór pokoju do edycji]
-    J --> K[Modyfikacja danych parametrow głównych]
+    J --> K[Edycja parametrów pokoju]
     K --> I
     F --> L[Wybór pokoju do usunięcia]
     L --> M{Pokój ma aktywne rezerwacje?}
@@ -231,7 +241,7 @@ flowchart TD
 
 ---
 
-## 6. Diagram aktywności — Obsługa klienta na miejscu (Recepcjonista)
+## 6. Diagram aktywności - Obsługa klienta na miejscu (Recepcjonista)
 
 ```mermaid
 flowchart TD
@@ -248,7 +258,7 @@ flowchart TD
     I --> H
     
     H --> J[Wydanie kluczy lub kart]
-    J --> K([Koniec obsługi awansu])
+    J --> K([Zakończenie check-in])
     
     B -- Obsługa w trakcie pobytu --> L{Czego potrzebuje?}
     L -- Dodatkowa usługa --> M[Dodanie usługi do rachunku pokoju]
@@ -267,11 +277,11 @@ flowchart TD
 
 ---
 
-## 7. Diagram sekwencji — Tworzenie rezerwacji (API)
+## 7. Diagram sekwencji - Tworzenie rezerwacji (API)
 
 ```mermaid
 sequenceDiagram
-    actor Klient as Zalogowany Użytkownik
+    actor Klient as Zalogowany użytkownik
     participant API as API Server
     participant DB as Baza Danych
 
@@ -300,7 +310,7 @@ sequenceDiagram
 
 ---
 
-## 8. Diagram sekwencji — Zarządzanie zasobami (Administrator)
+## 8. Diagram sekwencji - Zarządzanie zasobami (Administrator)
 
 ```mermaid
 sequenceDiagram
@@ -333,7 +343,7 @@ sequenceDiagram
 
 ---
 
-## 9. Diagram sekwencji — Check-in i doliczenie usługi (Recepcjonista)
+## 9. Diagram sekwencji - Check-in i doliczenie usługi (Recepcjonista)
 
 ```mermaid
 sequenceDiagram

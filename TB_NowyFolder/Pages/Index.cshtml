@@ -1,12 +1,12 @@
-﻿@page
+@page
 @model IndexModel
 @{
     ViewData["Title"] = "Reservation Management";
 }
 
-<!-- Hero -->
+<!-- Baner główny -->
 <div class="hotel-hero">
-    <!-- Weather Widget -->
+    <!-- Widget pogodowy -->
     <div class="weather-widget-glass d-none" id="weather-widget" title="Local Weather in Krosno">
         <span class="weather-icon" id="weather-icon">☀️</span>
         <span class="weather-temp" id="weather-temp">--°C</span>
@@ -20,9 +20,9 @@
     </div>
 </div>
 
-<!-- Auth -->
+<!-- Formularze logowania / rejestracji -->
 <div class="card-hotel auth-card glass-auth-card">
-    <!-- Logged out: Sign In Panel -->
+    <!-- Widok logowania -->
     <div id="auth-logged-out-panel">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
@@ -45,7 +45,7 @@
         </div>
     </div>
 
-    <!-- Logged out: Register Panel -->
+    <!-- Widok rejestracji -->
     <div id="auth-register-panel" class="d-none">
         <div class="row g-3 align-items-end">
             <div class="col-md-2">
@@ -92,7 +92,7 @@
     <div class="mt-2" id="auth-message"></div>
 </div>
 
-<!-- Section Navigation Tabs -->
+<!-- Zakładki (nawigacja SPA) -->
 <div class="nav-tab-container" id="nav-tabs-list">
     <button id="tab-rooms" class="nav-tab-btn active" onclick="switchTab('rooms')">Rooms & Suites</button>
     <button id="tab-services" class="nav-tab-btn" onclick="switchTab('services')">Services & Amenities</button>
@@ -100,15 +100,15 @@
     <button id="tab-guests" class="nav-tab-btn" onclick="switchTab('guests')">Guests Directory</button>
 </div>
 
-<!-- Main Content Area -->
+<!-- Zawartość główna -->
 <div class="card-hotel mb-5" style="padding:2rem">
-    <!-- Operations Dashboard (Staff/Admin) -->
+    <!-- Dashboard dla obsługi -->
     <div id="section-dashboard" class="content-section d-none">
         <div class="section-hdr">
             <h3>Operations Control Panel</h3>
         </div>
         
-        <!-- Stats Row -->
+        <!-- Statystyki -->
         <div class="row g-4 mb-4">
             <div class="col-md-3">
                 <div class="card-hotel" style="background:var(--bg-warm);border-color:var(--border);padding:1.25rem">
@@ -140,7 +140,7 @@
             </div>
         </div>
 
-        <!-- Quick Activity Row -->
+        <!-- Tabele z aktywnościami -->
         <div class="row g-4">
             <div class="col-md-7">
                 <div class="card-hotel h-100" style="padding:1.25rem">
@@ -165,7 +165,7 @@
         </div>
     </div>
 
-    <!-- Guests -->
+    <!-- Lista gości -->
     <div id="section-guests" class="content-section d-none">
         <div class="section-hdr">
             <h3>Guest Directory</h3>
@@ -176,7 +176,7 @@
         </div>
     </div>
 
-    <!-- Rooms -->
+    <!-- Lista pokoi -->
     <div id="section-rooms" class="content-section">
         <div class="section-hdr">
             <h3>Rooms & Suites</h3>
@@ -191,7 +191,7 @@
         </div>
     </div>
 
-    <!-- Services -->
+    <!-- Lista usług -->
     <div id="section-services" class="content-section d-none">
         <div class="section-hdr">
             <h3>Services & Amenities</h3>
@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <!-- Reservations -->
+    <!-- Moje Rezerwacje -->
     <div id="section-reservations" class="content-section d-none">
         <div class="section-hdr">
             <h3>My Bookings</h3>
@@ -214,9 +214,9 @@
     </div>
 </div>
 
-<!-- ══ Modals ══ -->
+<!-- ══ Modale ukryte na stronie ══ -->
 
-<!-- Room Details -->
+<!-- Szczegóły pokoju -->
 <div class="modal fade" id="roomDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -227,7 +227,7 @@
     </div></div>
 </div>
 
-<!-- Service Details -->
+<!-- Szczegóły usługi -->
 <div class="modal fade" id="serviceDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -238,7 +238,7 @@
     </div></div>
 </div>
 
-<!-- Reservation Details -->
+<!-- Szczegóły rezerwacji -->
 <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg"><div class="modal-content">
         <div class="modal-header">
@@ -252,7 +252,7 @@
     </div></div>
 </div>
 
-<!-- Add Guest -->
+<!-- Dodawanie gościa -->
 <div class="modal fade" id="addGuestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -274,7 +274,7 @@
     </div></div>
 </div>
 
-<!-- Add Reservation -->
+<!-- Nowa rezerwacja -->
 <div class="modal fade" id="addReservationModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -303,7 +303,7 @@
     </div></div>
 </div>
 
-<!-- Add Room -->
+<!-- Dodawanie pokoju -->
 <div class="modal fade" id="addRoomModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -326,7 +326,7 @@
     </div></div>
 </div>
 
-<!-- Add Service -->
+<!-- Nowa usługa -->
 <div class="modal fade" id="addServiceModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -348,7 +348,7 @@
     </div></div>
 </div>
 
-<!-- Add Room to Reservation -->
+<!-- Przypisywanie pokoju do rezerwacji -->
 <div class="modal fade" id="addRoomToReservationModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -369,7 +369,7 @@
     </div></div>
 </div>
 
-<!-- Add Service to Reservation -->
+<!-- Zamawianie usługi do rezerwacji -->
 <div class="modal fade" id="addServiceToReservationModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog"><div class="modal-content">
         <div class="modal-header">
@@ -389,6 +389,7 @@
     </div></div>
 </div>
 
+@* Dodawanie skryptów JS *@
 @section Scripts {
     <script src="~/js/api-client.js" asp-append-version="true"></script>
 }

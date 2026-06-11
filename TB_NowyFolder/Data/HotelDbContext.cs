@@ -10,6 +10,7 @@ public class HotelDbContext : DbContext
     {
     }
 
+    // Tabela baz danych
     public DbSet<Guest> Guests { get; set; }
     public DbSet<Room> Rooms { get; set; }
     public DbSet<RoomType> RoomTypes { get; set; }
